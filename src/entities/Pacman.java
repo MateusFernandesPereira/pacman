@@ -4,6 +4,8 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.HashSet;
 import java.util.Random;
+import java.util.List;
+import java.util.ArrayList;
 import javax.swing.*;
 
 public class PacMan extends JPanel implements ActionListener, KeyListener {
@@ -298,9 +300,46 @@ public class PacMan extends JPanel implements ActionListener, KeyListener {
     public void actionPerformed(ActionEvent e) {
         move();
         repaint();
+
         if (gameOver) {
             gameLoop.stop();
+
+            String name = JOptionPane.showInputDialog(this, "GAME OVER!\nDigite seu nome (até 3 letras):");
+            if (name != null && !name.trim().isEmpty()){
+                name = name.trim().toUpperCase();
+                if (name.length() > 3) name = name.substring(0, 3);
+                RankingManager.saveScore(name, score);
+            }
+
+            List<ScoreEntry> ranking = RankingManager.loadRanking();
+            StringBuilder sb = new StringBuilder("🏆 Ranking 🏆\n\n");
+            int pos = 1;
+            for (ScoreEntry entry : ranking) {
+                sb.append(pos++).append(". ")
+                .append(entry.name).append(" - ")
+                .append(entry.score).append("\n");
+            }
+
+            int option = JOptionPane.showConfirmDialog(
+                this,
+                sb.toString() + "\nDeseja jogar novamente?",
+                "Fim de Jogo",
+                JOptionPane.YES_NO_OPTION
+            );
+
+            if (option == JOptionPane.YES_OPTION) {
+                loadMap();
+                resetPositions();
+                lives = 3;
+                score = 0;
+                gameOver = false;
+                gameLoop.start();
+            } else {
+                System.exit(0);
+            }
         }
+
+
     }
 
     @Override

@@ -17,19 +17,20 @@ O projeto foi desenvolvido como trabalho final da disciplina Técnicas de Progra
 
 ## 📁 Estrutura do Projeto
 
-
 ```bash
+pacman/
+├── lib/                         # Bibliotecas externas
+├── src/
+│   ├── entities/                # Personagens e objetos do jogo (Pac-Man, Fantasmas, etc.)
+│   │   ├── PacMan.java          # Lógica principal do jogo e renderização gráfica
+│   │   ├── ScoreEntry.java      # Modelo de entrada do ranking (nome + score)
+│   │   ├── RankingManager.java  # Gerenciamento de leitura/escrita do ranking em JSON
+│   ├── images/                  # Recursos visuais (sprites do jogo)
+│   ├── App.java                 # Inicialização do jogo diretamente (sem menu)
+│   ├── MainMenu.java           # Tela inicial com opções: jogar, ver ranking, sair
+├── ranking.json                # Arquivo de armazenamento das pontuações
+├── README.md                   # Documentação do projeto
 
-    pacman/
-    ├── db/               # Conexão com DB 
-    ├── src/
-    │   ├── game/         # Lógica principal do jogo e renderização gráfica
-    │   ├── entities/     # Personagens e objetos do jogo (Pac-Man, Fantasmas, etc.)
-    │   ├── map/          # Definição e estrutura do mapa do jogo
-    │   ├── utils/        # Funções utilitárias (ex: carregamento de imagens)
-    │   └── Main.java     # Classe principal que inicializa o jogo
-    ├── assets/           # Recursos visuais e sonoros (sprites, sons, etc.)
-    ├── README.md         # Documentação do projeto
 
 ```
 
