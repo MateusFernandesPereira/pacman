@@ -54,8 +54,6 @@ javac App.java
 
 ---
 
----
-
 ## ⚙️ Observações
 
 - A biblioteca `gson-2.10.1.jar` é usada para ler e escrever o arquivo `ranking.json`.  
