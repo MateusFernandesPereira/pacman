@@ -25,8 +25,7 @@ pacman/
 │   ├── entities/                # Classes dos personagens e lógica do jogo
 │   │   ├── Pacman.java
 │   │   ├── RankingManager.java
-│   │   ├── ScoreEntry.java
-│   │   └── (outros .java e .class relacionados)
+│   │   └── ScoreEntry.java
 │   ├── images/                  # Imagens e sprites usados no jogo
 │   ├── App.java                 # Classe principal para iniciar o jogo direto (sem menu)
 │   ├── MainMenu.java            # Tela inicial com menu para jogar, ranking, sair
