@@ -1,151 +1,191 @@
-
 package entities;
 
 import managers.PathfindingManager;
 import models.Direction;
-import java.awt.Image;
 
+import java.awt.*;
+
+/**
+ * Classe abstrata base para todos os fantasmas.
+ * 
+ * Design Pattern: Template Method
+ * - O metodo update() define a estrutura geral de atualizacao
+ * - O metodo abstrato chooseDirection() eh implementado por cada fantasma
+ */
 public abstract class Ghost {
     protected int x;
     protected int y;
     protected int startX;
     protected int startY;
+    protected int width;
+    protected int height;
     protected Image image;
     protected Direction direction;
     protected int velocityX;
     protected int velocityY;
-    protected PathfindingManager pathfindingManager;
     protected int tileSize;
-    
+    protected PathfindingManager pathfindingManager;
+    protected String name;
+    protected Color color;
+
     /**
-     * Construtor do fantasma.
-     * 
-     * param image imagem do fantasma
-     * param x posição inicial x em pixels
-     * param y posição inicial y em pixels
-     * param tileSize tamanho do tile
-     * param pathfindingManager gerenciador de pathfinding
+     * Construtor base para fantasmas.
      */
-    public Ghost(Image image, int x, int y, int tileSize, PathfindingManager pathfindingManager) {
+    public Ghost(Image image, int x, int y, int width, int height, int tileSize, 
+                 PathfindingManager pathfindingManager, String name, Color color) {
         this.image = image;
         this.x = x;
         this.y = y;
         this.startX = x;
         this.startY = y;
+        this.width = width;
+        this.height = height;
         this.tileSize = tileSize;
         this.pathfindingManager = pathfindingManager;
-        this.direction = Direction.UP;
+        this.direction = Direction.NONE;
+        this.velocityX = 0;
+        this.velocityY = 0;
+        this.name = name;
+        this.color = color;
+    }
+
+    /**
+     * Metodo template que define o fluxo de atualizacao do fantasma.
+     * Chama o metodo abstrato chooseDirection() que cada fantasma implementa.
+     */
+    public void update(int pacmanX, int pacmanY, Direction pacmanDirection, 
+                      int[][] walls, int boardWidth, int boardHeight) {
+        // Apenas atualizar direcao quando estiver alinhado com o grid
+        if (isAlignedWithGrid()) {
+            Direction newDirection = chooseDirection(pacmanX, pacmanY, pacmanDirection);
+            if (newDirection != Direction.NONE) {
+                setDirection(newDirection);
+            }
+        }
+
+        // Mover o fantasma
+        move(walls, boardWidth, boardHeight);
+    }
+
+    /**
+     * Metodo abstrato que cada fantasma deve implementar
+     * para definir sua estrategia de escolha de direcao.
+     */
+    protected abstract Direction chooseDirection(int pacmanX, int pacmanY, Direction pacmanDirection);
+
+    /**
+     * Define a direcao do fantasma e atualiza a velocidade.
+     */
+    protected void setDirection(Direction newDirection) {
+        this.direction = newDirection;
         updateVelocity();
     }
-    
+
     /**
-     * Método abstrato que define como o fantasma escolhe sua direção.
-     * Cada tipo de fantasma implementa sua própria estratégia.
-     * 
-     * param pacmanX posição x do Pacman
-     * param pacmanY posição y do Pacman
-     * param pacmanDirection direção atual do Pacman
-     * return direção escolhida
-     */
-    public abstract Direction chooseDirection(int pacmanX, int pacmanY, Direction pacmanDirection);
-    
-    /**
-     * Retorna o nome do algoritmo usado por este fantasma.
-     * Usado para fins educacionais e debugging.
-     * 
-     * return nome do algoritmo
-     */
-    public abstract String getAlgorithmName();
-    
-    /**
-     * Atualiza a velocidade baseada na direção atual.
+     * Atualiza a velocidade baseado na direcao atual.
      */
     protected void updateVelocity() {
-        velocityX = direction.getDx() * (tileSize / 4);
-        velocityY = direction.getDy() * (tileSize / 4);
+        velocityX = direction.dx * (tileSize / 4);
+        velocityY = direction.dy * (tileSize / 4);
     }
-    
+
     /**
-     * Move o fantasma aplicando a velocidade.
+     * Move o fantasma na direcao atual.
      */
-    public void move() {
-        x += velocityX;
-        y += velocityY;
-    }
-    
-    /**
-     * Define uma nova direção e atualiza a velocidade.
-     * 
-     * param newDirection nova direção
-     */
-    public void setDirection(Direction newDirection) {
-        if (newDirection != null) {
-            this.direction = newDirection;
-            updateVelocity();
+    protected void move(int[][] walls, int boardWidth, int boardHeight) {
+        int newX = x + velocityX;
+        int newY = y + velocityY;
+
+        // Verificar colisao com paredes
+        if (!wouldCollideWithWall(newX, newY, walls, boardWidth, boardHeight)) {
+            x = newX;
+            y = newY;
         }
     }
-    
+
     /**
-     * Reseta o fantasma para a posição inicial.
+     * Verifica se o fantasma colidira com uma parede na nova posicao.
+     */
+    protected boolean wouldCollideWithWall(int newX, int newY, int[][] walls, 
+                                          int boardWidth, int boardHeight) {
+        // Verificar se esta fora dos limites
+        if (newX < 0 || newX + width > boardWidth || newY < 0 || newY + height > boardHeight) {
+            return true;
+        }
+
+        // Verificar colisao com paredes do grid
+        int gridX = newX / tileSize;
+        int gridY = newY / tileSize;
+
+        // Verificar os 4 cantos da hitbox do fantasma
+        int[][] corners = {
+            {newX, newY},                           // Top-left
+            {newX + width - 1, newY},               // Top-right
+            {newX, newY + height - 1},              // Bottom-left
+            {newX + width - 1, newY + height - 1}   // Bottom-right
+        };
+
+        for (int[] corner : corners) {
+            int cX = corner[0] / tileSize;
+            int cY = corner[1] / tileSize;
+            
+            if (cY >= 0 && cY < walls.length && cX >= 0 && cX < walls[0].length) {
+                if (walls[cY][cX] == 1) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Verifica se o fantasma esta alinhado com o grid.
+     * Usado para decidir quando atualizar a direcao.
+     */
+    protected boolean isAlignedWithGrid() {
+        return (x % tileSize == 0) && (y % tileSize == 0);
+    }
+
+    /**
+     * Reseta o fantasma para sua posicao inicial.
      */
     public void reset() {
         this.x = startX;
         this.y = startY;
-        this.direction = Direction.UP;
-        updateVelocity();
+        this.direction = Direction.NONE;
+        this.velocityX = 0;
+        this.velocityY = 0;
     }
-    
+
     /**
-     * Verifica se o fantasma está alinhado com o grid.
-     * Importante para fazer decisões de pathfinding apenas em posições válidas.
-     * 
-     * return true se está alinhado
+     * Desenha o fantasma na tela.
      */
-    public boolean isAlignedWithGrid() {
-        return (x % tileSize == 0) && (y % tileSize == 0);
+    public void draw(Graphics g) {
+        g.drawImage(image, x, y, width, height, null);
+        
+        // Debug: desenhar nome e posicao do fantasma
+        // g.setColor(color);
+        // g.setFont(new Font("Arial", Font.PLAIN, 10));
+        // g.drawString(name, x, y - 5);
     }
-    
+
+    /**
+     * Verifica colisao com o Pacman.
+     */
+    public boolean collidesWith(int pacmanX, int pacmanY, int pacmanWidth, int pacmanHeight) {
+        return x < pacmanX + pacmanWidth &&
+               x + width > pacmanX &&
+               y < pacmanY + pacmanHeight &&
+               y + height > pacmanY;
+    }
+
     // Getters
-    
-    public int getX() {
-        return x;
-    }
-    
-    public int getY() {
-        return y;
-    }
-    
-    public Image getImage() {
-        return image;
-    }
-    
-    public Direction getDirection() {
-        return direction;
-    }
-    
-    public int getVelocityX() {
-        return velocityX;
-    }
-    
-    public int getVelocityY() {
-        return velocityY;
-    }
-    
-    // Setters
-    
-    public void setX(int x) {
-        this.x = x;
-    }
-    
-    public void setY(int y) {
-        this.y = y;
-    }
-    
-    public void setVelocityX(int velocityX) {
-        this.velocityX = velocityX;
-    }
-    
-    public void setVelocityY(int velocityY) {
-        this.velocityY = velocityY;
-    }
+    public int getX() { return x; }
+    public int getY() { return y; }
+    public int getWidth() { return width; }
+    public int getHeight() { return height; }
+    public Image getImage() { return image; }
+    public String getName() { return name; }
+    public Color getColor() { return color; }
 }
