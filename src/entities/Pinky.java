@@ -3,69 +3,50 @@ package entities;
 
 import managers.PathfindingManager;
 import models.Direction;
-import java.awt.Image;
 
+import java.awt.*;
+
+/**
+ * Pinky - O Emboscador (Fantasma Rosa)
+ * 
+ * Personalidade: Estrategico, astuto, tatico
+ * Algoritmo: A*
+ * Estrategia: Tenta emboscar o Pacman prevendo sua posicao futura
+ * 
+ * Pinky calcula 4 tiles a frente da direcao do Pacman e usa A* 
+ * para chegar la rapidamente.
+ */
 public class Pinky extends Ghost {
-    private static final int PREDICTION_TILES = 4;
-    
-    /**
-     * Construtor do Pinky.
-     * 
-     * param image imagem do fantasma rosa
-     * param x posição inicial x
-     * param y posição inicial y
-     * param tileSize tamanho do tile
-     * param pathfindingManager gerenciador de pathfinding
-     */
-    public Pinky(Image image, int x, int y, int tileSize, PathfindingManager pathfindingManager) {
-        super(image, x, y, tileSize, pathfindingManager);
+
+    public Pinky(Image image, int x, int y, int width, int height, int tileSize, 
+                 PathfindingManager pathfindingManager) {
+        super(image, x, y, width, height, tileSize, pathfindingManager, 
+              "Pinky", Color.PINK);
     }
-    
-    /**
-     * Escolhe a direção usando A* para emboscar o Pacman.
-     * 
-     * Pinky prevê onde o Pacman estará baseado em sua direção atual
-     * e usa A* para chegar ao ponto de emboscada de forma eficiente.
-     * 
-     * param pacmanX posição x do Pacman
-     * param pacmanY posição y do Pacman
-     * param pacmanDirection direção atual do Pacman
-     * return direção para emboscar o Pacman
-     */
+
     @Override
-    public Direction chooseDirection(int pacmanX, int pacmanY, Direction pacmanDirection) {
-        // Calcula posição de emboscada (4 tiles à frente do Pacman)
-        int targetX = pacmanX;
-        int targetY = pacmanY;
-        
-        if (pacmanDirection != null) {
-            targetX += pacmanDirection.getDx() * tileSize * PREDICTION_TILES;
-            targetY += pacmanDirection.getDy() * tileSize * PREDICTION_TILES;
+    protected Direction chooseDirection(int pacmanX, int pacmanY, Direction pacmanDirection) {
+        // Previsao: calcular 4 tiles a frente da direcao do Pacman
+        int targetX = pacmanX + (pacmanDirection.dx * tileSize * 4);
+        int targetY = pacmanY + (pacmanDirection.dy * tileSize * 4);
+
+        // Usar A* para emboscada eficiente
+        Direction nextDir = pathfindingManager.getNextDirectionAStar(
+            this.x, this.y, targetX, targetY
+        );
+
+        // Se A* nao retornou uma direcao valida, tentar ir direto ao Pacman
+        if (nextDir == Direction.NONE) {
+            nextDir = pathfindingManager.getNextDirectionAStar(
+                this.x, this.y, pacmanX, pacmanY
+            );
         }
-        
-        // Usa A* para calcular caminho até o ponto de emboscada
-        Direction nextDir = pathfindingManager.getNextDirectionAStar(x, y, targetX, targetY);
-        
-        // Se não encontrou caminho para a emboscada, persegue diretamente
-        if (nextDir == null) {
-            nextDir = pathfindingManager.getNextDirectionAStar(x, y, pacmanX, pacmanY);
+
+        // Se ainda nao temos uma direcao valida, manter a atual
+        if (nextDir == Direction.NONE) {
+            return this.direction;
         }
-        
-        // Se ainda não encontrou, mantém direção atual
-        if (nextDir == null) {
-            return direction;
-        }
-        
-        // Evita reverter instantaneamente
-        if (nextDir == direction.opposite()) {
-            return direction;
-        }
-        
+
         return nextDir;
-    }
-    
-    @Override
-    public String getAlgorithmName() {
-        return "A* (A-Star)";
     }
 }
