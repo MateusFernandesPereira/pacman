@@ -3,277 +3,123 @@ package managers;
 import graph.Graph;
 import graph.Node;
 import graph.algorithms.*;
-import models.Position;
 import models.Direction;
+
 import java.util.List;
 
 /**
- * Gerenciador de pathfinding que integra os algoritmos de busca com o jogo.
+ * Gerenciador de pathfinding que fornece uma interface simplificada
+ * para os algoritmos de busca em grafos.
  * 
- * Esta classe atua como uma fachada (Facade Pattern) para os algoritmos de
- * pathfinding, simplificando o uso pelos fantasmas e outras entidades do jogo.
- * 
- * RESPONSABILIDADES:
- * - Converter coordenadas em pixels para nós do grafo
- * - Fornecer interface unificada para todos os algoritmos
- * - Gerenciar o grafo do labirinto
- * - Calcular caminhos e direções para os fantasmas
- * 
- * DESIGN PATTERN: Facade (Fachada)
- * - Simplifica a interface complexa dos algoritmos de pathfinding
- * - Oculta detalhes de implementação dos clientes (fantasmas)
- * 
+ * Pattern: Facade - simplifica o uso dos algoritmos de pathfinding.
  */
 public class PathfindingManager {
     private final Graph graph;
-    private final int tileSize;
-    
-    /**
-     * Construtor do gerenciador.
-     * 
-     * param tileMap mapa do labirinto
-     * param rows número de linhas
-     * param columns número de colunas
-     * param tileSize tamanho do tile em pixels
-     */
-    public PathfindingManager(String[] tileMap, int rows, int columns, int tileSize) {
-        this.tileSize = tileSize;
-        this.graph = new Graph(rows, columns);
-        this.graph.buildFromTileMap(tileMap);
+
+    public PathfindingManager(Graph graph) {
+        this.graph = graph;
     }
-    
+
     /**
-     * return o grafo do labirinto
-     */
-    public Graph getGraph() {
-        return graph;
-    }
-    
-    /**
-     * Converte coordenadas em pixels para um nó do grafo.
-     * 
-     * param pixelX coordenada x em pixels
-     * param pixelY coordenada y em pixels
-     * return nó correspondente, ou null se não existir
-     */
-    public Node getNodeFromPixels(int pixelX, int pixelY) {
-        int gridX = pixelX / tileSize;
-        int gridY = pixelY / tileSize;
-        return graph.getNode(gridX, gridY);
-    }
-    
-    /**
-     * Converte uma posição em grid para nó do grafo.
-     * 
-     * param position posição em coordenadas de grid
-     * return nó correspondente, ou null se não existir
-     */
-    public Node getNode(Position position) {
-        return graph.getNode(position);
-    }
-    
-    // ==================== DIJKSTRA ====================
-    
-    /**
-     * Calcula caminho usando Dijkstra (caminho mais curto considerando pesos).
-     * 
-     * Usado por: Blinky (fantasma vermelho)
-     * 
-     * param startX x inicial em pixels
-     * param startY y inicial em pixels
-     * param goalX x objetivo em pixels
-     * param goalY y objetivo em pixels
-     * return lista de nós no caminho
-     */
-    public List<Node> findPathDijkstra(int startX, int startY, int goalX, int goalY) {
-        Node start = getNodeFromPixels(startX, startY);
-        Node goal = getNodeFromPixels(goalX, goalY);
-        
-        if (start == null || goal == null) {
-            return List.of();
-        }
-        
-        return Dijkstra.findPath(start, goal);
-    }
-    
-    /**
-     * Retorna a próxima direção usando Dijkstra.
-     * 
-     * param startX x inicial em pixels
-     * param startY y inicial em pixels
-     * param goalX x objetivo em pixels
-     * param goalY y objetivo em pixels
-     * return direção a seguir, ou null
+     * Retorna a proxima direcao para ir de (startX, startY) ate (goalX, goalY)
+     * usando o algoritmo de Dijkstra.
      */
     public Direction getNextDirectionDijkstra(int startX, int startY, int goalX, int goalY) {
-        Node start = getNodeFromPixels(startX, startY);
-        Node goal = getNodeFromPixels(goalX, goalY);
-        
-        if (start == null || goal == null) {
-            return null;
-        }
-        
-        return Dijkstra.getNextDirection(start, goal);
+        return getNextDirection(startX, startY, goalX, goalY, PathAlgorithm.DIJKSTRA);
     }
-    
-    // ==================== A* ====================
-    
+
     /**
-     * Calcula caminho usando A* (caminho mais curto com heurística).
-     * 
-     * Usado por: Pinky (fantasma rosa)
-     * 
-     * param startX x inicial em pixels
-     * param startY y inicial em pixels
-     * param goalX x objetivo em pixels
-     * param goalY y objetivo em pixels
-     * return lista de nós no caminho
-     */
-    public List<Node> findPathAStar(int startX, int startY, int goalX, int goalY) {
-        Node start = getNodeFromPixels(startX, startY);
-        Node goal = getNodeFromPixels(goalX, goalY);
-        
-        if (start == null || goal == null) {
-            return List.of();
-        }
-        
-        return AStar.findPath(start, goal);
-    }
-    
-    /**
-     * Retorna a próxima direção usando A*.
-     * 
-     * param startX x inicial em pixels
-     * param startY y inicial em pixels
-     * param goalX x objetivo em pixels
-     * param goalY y objetivo em pixels
-     * return direção a seguir, ou null
+     * Retorna a proxima direcao usando A*.
      */
     public Direction getNextDirectionAStar(int startX, int startY, int goalX, int goalY) {
-        Node start = getNodeFromPixels(startX, startY);
-        Node goal = getNodeFromPixels(goalX, goalY);
-        
-        if (start == null || goal == null) {
-            return null;
-        }
-        
-        return AStar.getNextDirection(start, goal);
+        return getNextDirection(startX, startY, goalX, goalY, PathAlgorithm.ASTAR);
     }
-    
-    // ==================== BFS ====================
-    
+
     /**
-     * Calcula caminho usando BFS (menor número de passos).
-     * 
-     * Usado por: Clyde (fantasma laranja)
-     * 
-     * param startX x inicial em pixels
-     * param startY y inicial em pixels
-     * param goalX x objetivo em pixels
-     * param goalY y objetivo em pixels
-     * return lista de nós no caminho
-     */
-    public List<Node> findPathBFS(int startX, int startY, int goalX, int goalY) {
-        Node start = getNodeFromPixels(startX, startY);
-        Node goal = getNodeFromPixels(goalX, goalY);
-        
-        if (start == null || goal == null) {
-            return List.of();
-        }
-        
-        return BFS.findPath(start, goal);
-    }
-    
-    /**
-     * Retorna a próxima direção usando BFS.
-     * 
-     * param startX x inicial em pixels
-     * param startY y inicial em pixels
-     * param goalX x objetivo em pixels
-     * param goalY y objetivo em pixels
-     * return direção a seguir, ou null
+     * Retorna a proxima direcao usando BFS.
      */
     public Direction getNextDirectionBFS(int startX, int startY, int goalX, int goalY) {
-        Node start = getNodeFromPixels(startX, startY);
-        Node goal = getNodeFromPixels(goalX, goalY);
-        
-        if (start == null || goal == null) {
-            return null;
-        }
-        
-        return BFS.getNextDirection(start, goal);
+        return getNextDirection(startX, startY, goalX, goalY, PathAlgorithm.BFS);
     }
-    
+
     /**
-     * Calcula distância em passos usando BFS.
-     * 
-     * param startX x inicial em pixels
-     * param startY y inicial em pixels
-     * param goalX x objetivo em pixels
-     * param goalY y objetivo em pixels
-     * return número de passos, ou -1 se não houver caminho
+     * Retorna a proxima direcao usando DFS.
+     */
+    public Direction getNextDirectionDFS(int startX, int startY, int goalX, int goalY) {
+        return getNextDirection(startX, startY, goalX, goalY, PathAlgorithm.DFS);
+    }
+
+    /**
+     * Calcula a distancia (em passos) entre duas posicoes usando BFS.
      */
     public int getDistanceBFS(int startX, int startY, int goalX, int goalY) {
-        Node start = getNodeFromPixels(startX, startY);
-        Node goal = getNodeFromPixels(goalX, goalY);
+        Node start = graph.getNode(startX, startY);
+        Node goal = graph.getNode(goalX, goalY);
         
         if (start == null || goal == null) {
             return -1;
         }
-        
+
         return BFS.getDistance(start, goal);
     }
-    
-    // ==================== DFS ====================
-    
+
     /**
-     * Calcula caminho usando DFS (exploração em profundidade).
-     * 
-     * Usado por: Inky (fantasma azul/ciano)
-     * 
-     * param startX x inicial em pixels
-     * param startY y inicial em pixels
-     * param goalX x objetivo em pixels
-     * param goalY y objetivo em pixels
-     * return lista de nós no caminho
+     * Metodo generico para obter a proxima direcao usando qualquer algoritmo.
      */
-    public List<Node> findPathDFS(int startX, int startY, int goalX, int goalY) {
-        Node start = getNodeFromPixels(startX, startY);
-        Node goal = getNodeFromPixels(goalX, goalY);
-        
+    private Direction getNextDirection(int startX, int startY, int goalX, int goalY, PathAlgorithm algorithm) {
+        Node start = graph.getNode(startX, startY);
+        Node goal = graph.getNode(goalX, goalY);
+
         if (start == null || goal == null) {
-            return List.of();
+            return Direction.NONE;
         }
-        
-        return DFS.findPath(start, goal);
-    }
-    
-    /**
-     * Retorna a próxima direção usando DFS.
-     * 
-     * param startX x inicial em pixels
-     * param startY y inicial em pixels
-     * param goalX x objetivo em pixels
-     * param goalY y objetivo em pixels
-     * return direção a seguir, ou null
-     */
-    public Direction getNextDirectionDFS(int startX, int startY, int goalX, int goalY) {
-        Node start = getNodeFromPixels(startX, startY);
-        Node goal = getNodeFromPixels(goalX, goalY);
-        
-        if (start == null || goal == null) {
-            return null;
+
+        if (start.equals(goal)) {
+            return Direction.NONE;
         }
-        
-        return DFS.getNextDirection(start, goal);
+
+        // Encontrar caminho usando o algoritmo especificado
+        List<Node> path;
+        switch (algorithm) {
+            case DIJKSTRA:
+                path = Dijkstra.findPath(start, goal);
+                break;
+            case ASTAR:
+                path = AStar.findPath(start, goal);
+                break;
+            case BFS:
+                path = BFS.findPath(start, goal);
+                break;
+            case DFS:
+                path = DFS.findPath(start, goal);
+                break;
+            default:
+                return Direction.NONE;
+        }
+
+        // Se nao encontrou caminho ou o caminho tem menos de 2 nos, retornar NONE
+        if (path.isEmpty() || path.size() < 2) {
+            return Direction.NONE;
+        }
+
+        // O proximo no eh o segundo elemento do caminho (indice 1)
+        Node nextNode = path.get(1);
+
+        // Determinar a direcao para o proximo no
+        return start.getDirectionTo(nextNode);
     }
-    
+
     /**
-     * Retorna informações sobre o grafo.
-     * 
-     * return estatísticas do grafo
+     * Retorna o grafo gerenciado por este PathfindingManager.
      */
-    public String getGraphStats() {
-        return graph.getStats();
+    public Graph getGraph() {
+        return graph;
+    }
+
+    /**
+     * Enum para especificar qual algoritmo de pathfinding usar.
+     */
+    private enum PathAlgorithm {
+        DIJKSTRA, ASTAR, BFS, DFS
     }
 }
