@@ -3,76 +3,59 @@ package entities;
 
 import managers.PathfindingManager;
 import models.Direction;
-import java.awt.Image;
 
+import java.awt.*;
+
+/**
+ * Clyde - O Timido (Fantasma Laranja)
+ * 
+ * Personalidade: Timido, indeciso, covarde
+ * Algoritmo: BFS
+ * Estrategia: Comportamento misto baseado em distancia
+ * 
+ * - Longe do Pacman (> 8 tiles): Persegue usando BFS
+ * - Perto do Pacman (<= 8 tiles): Foge para o canto inferior esquerdo
+ * 
+ * Este comportamento cria um fantasma menos ameacador e mais interessante.
+ */
 public class Clyde extends Ghost {
-    private static final int FLEE_DISTANCE = 8; // tiles
-    private final int cornerX;
-    private final int cornerY;
-    
-    /**
-     * Construtor do Clyde.
-     * 
-     * param image imagem do fantasma laranja
-     * param x posição inicial x
-     * param y posição inicial y
-     * param tileSize tamanho do tile
-     * param pathfindingManager gerenciador de pathfinding
-     */
-    public Clyde(Image image, int x, int y, int tileSize, PathfindingManager pathfindingManager) {
-        super(image, x, y, tileSize, pathfindingManager);
+    private static final int FLEE_DISTANCE = 8; // Distancia em tiles para comecar a fugir
+    private int cornerX;
+    private int cornerY;
+
+    public Clyde(Image image, int x, int y, int width, int height, int tileSize, 
+                 PathfindingManager pathfindingManager) {
+        super(image, x, y, width, height, tileSize, pathfindingManager, 
+              "Clyde", Color.ORANGE);
         // Canto inferior esquerdo como ponto de fuga
         this.cornerX = tileSize;
-        this.cornerY = 19 * tileSize;
+        this.cornerY = tileSize * 19;
     }
-    
-    /**
-     * Escolhe a direção usando BFS com comportamento misto.
-     * 
-     * Clyde usa BFS para calcular a distância até o Pacman e então decide:
-     * - Se longe: persegue usando BFS
-     * - Se perto: foge para o canto usando BFS
-     * 
-     * param pacmanX posição x do Pacman
-     * param pacmanY posição y do Pacman
-     * param pacmanDirection direção do Pacman (não utilizada)
-     * return direção escolhida
-     */
+
     @Override
-    public Direction chooseDirection(int pacmanX, int pacmanY, Direction pacmanDirection) {
-        // Calcula distância até o Pacman usando BFS
-        int distance = pathfindingManager.getDistanceBFS(x, y, pacmanX, pacmanY);
-        
-        Direction nextDir = null;
-        
-        if (distance < 0) {
-            // Não há caminho, mantém direção atual
-            return direction;
-        }
-        
-        if (distance > FLEE_DISTANCE) {
-            // Longe: persegue o Pacman
-            nextDir = pathfindingManager.getNextDirectionBFS(x, y, pacmanX, pacmanY);
+    protected Direction chooseDirection(int pacmanX, int pacmanY, Direction pacmanDirection) {
+        // Calcular distancia ate o Pacman usando BFS
+        int distance = pathfindingManager.getDistanceBFS(this.x, this.y, pacmanX, pacmanY);
+
+        Direction nextDir;
+
+        if (distance > FLEE_DISTANCE || distance == -1) {
+            // Longe: perseguir o Pacman
+            nextDir = pathfindingManager.getNextDirectionBFS(
+                this.x, this.y, pacmanX, pacmanY
+            );
         } else {
-            // Perto: foge para o canto
-            nextDir = pathfindingManager.getNextDirectionBFS(x, y, cornerX, cornerY);
+            // Perto: fugir para o canto
+            nextDir = pathfindingManager.getNextDirectionBFS(
+                this.x, this.y, cornerX, cornerY
+            );
         }
-        
-        // Se não encontrou direção, mantém a atual
-        if (nextDir == null) {
-            return direction;
+
+        // Se BFS nao retornou uma direcao valida, manter a atual
+        if (nextDir == Direction.NONE) {
+            return this.direction;
         }
-        
-        // Evita reverter instantaneamente
-        if (nextDir == direction.opposite()) {
-            return direction;
-        }
-        
+
         return nextDir;
-    }
-    
-    @Override
-    public String getAlgorithmName() {
-        return "BFS (Breadth-First Search)";
     }
 }

@@ -2,115 +2,80 @@
 package graph;
 
 import models.Position;
+import models.Direction;
+
 import java.util.*;
 
 /**
- * Representa um nó (vértice) no grafo que modela o labirinto do Pacman.
- * Cada nó corresponde a uma célula navegável do labirinto.
- * 
- * Estrutura de Dados:
- * - Position: armazena coordenadas (x, y) da célula
- * - Map<Node, Integer>: armazena vizinhos e pesos das arestas
- * 
- * Complexidade de Espaço: O(k) onde k é o número de vizinhos (máximo 4)
- * 
+ * Representa um vertice (no) no grafo.
+ * Cada no corresponde a uma celula navegavel do labirinto.
  */
 public class Node {
     private final Position position;
-    private final Map<Node, Integer> neighbors;
-    
-    /**
-     * Construtor do nó.
-     * param position posição do nó no tabuleiro
-     */
+    private final Map<Direction, Node> neighbors;
+
     public Node(Position position) {
         this.position = position;
         this.neighbors = new HashMap<>();
     }
-    
-    /**
-     * return posição do nó
-     */
+
     public Position getPosition() {
         return position;
     }
-    
+
     /**
-     * Adiciona uma aresta bidirecional entre este nó e outro.
-     * Por padrão, todas as arestas têm peso 1 (custo uniforme).
-     * 
-     * Complexidade: O(1)
-     * 
-     * param neighbor nó vizinho
+     * Adiciona um vizinho em uma direcao especifica.
      */
-    public void addNeighbor(Node neighbor) {
-        addNeighbor(neighbor, 1);
+    public void addNeighbor(Direction direction, Node neighbor) {
+        neighbors.put(direction, neighbor);
     }
-    
+
     /**
-     * Adiciona uma aresta bidirecional com peso específico.
-     * 
-     * Complexidade: O(1)
-     * 
-     * param neighbor nó vizinho
-     * param weight peso da aresta
+     * Retorna o vizinho em uma direcao especifica, ou null se nao existir.
      */
-    public void addNeighbor(Node neighbor, int weight) {
-        this.neighbors.put(neighbor, weight);
-        neighbor.neighbors.put(this, weight);
+    public Node getNeighbor(Direction direction) {
+        return neighbors.get(direction);
     }
-    
+
     /**
-     * return mapa de vizinhos e seus pesos
+     * Retorna todos os vizinhos conectados a este no.
      */
-    public Map<Node, Integer> getNeighbors() {
-        return neighbors;
+    public Collection<Node> getAllNeighbors() {
+        return neighbors.values();
     }
-    
+
     /**
-     * Retorna o peso da aresta entre este nó e o vizinho.
-     * 
-     * Complexidade: O(1)
-     * 
-     * param neighbor nó vizinho
-     * return peso da aresta, ou Integer.MAX_VALUE se não houver conexão
+     * Retorna o mapa completo de vizinhos (direcao -> no).
      */
-    public int getWeight(Node neighbor) {
-        return neighbors.getOrDefault(neighbor, Integer.MAX_VALUE);
+    public Map<Direction, Node> getNeighborsMap() {
+        return new HashMap<>(neighbors);
     }
-    
+
     /**
-     * Verifica se este nó é adjacente a outro.
-     * 
-     * Complexidade: O(1)
-     * 
-     * param other outro nó
-     * return true se são adjacentes
+     * Retorna a direcao para chegar a um vizinho especifico.
      */
-    public boolean isAdjacentTo(Node other) {
-        return neighbors.containsKey(other);
+    public Direction getDirectionTo(Node neighbor) {
+        for (Map.Entry<Direction, Node> entry : neighbors.entrySet()) {
+            if (entry.getValue().equals(neighbor)) {
+                return entry.getKey();
+            }
+        }
+        return Direction.NONE;
     }
-    
-    /**
-     * return número de vizinhos deste nó (grau do vértice)
-     */
-    public int getDegree() {
-        return neighbors.size();
-    }
-    
+
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        Node node = (Node) obj;
-        return position.equals(node.position);
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Node node = (Node) o;
+        return Objects.equals(position, node.position);
     }
-    
+
     @Override
     public int hashCode() {
-        return position.hashCode();
+        return Objects.hash(position);
     }
-    
+
     @Override
     public String toString() {
         return "Node" + position.toString();

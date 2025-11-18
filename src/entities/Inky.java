@@ -3,80 +3,73 @@ package entities;
 
 import managers.PathfindingManager;
 import models.Direction;
-import java.awt.Image;
+
+import java.awt.*;
 import java.util.Random;
 
+/**
+ * Inky - O Patrulheiro (Fantasma Azul/Ciano)
+ * 
+ * Personalidade: Imprevisivel, erratico, explorador
+ * Algoritmo: DFS
+ * Estrategia: Alterna entre patrulhamento aleatorio e perseguicao
+ * 
+ * Inky cobre areas do labirinto de forma nao-otima, criando comportamento
+ * imprevisivel que dificulta ao jogador prever seus movimentos.
+ */
 public class Inky extends Ghost {
-    private static final Random random = new Random();
-    private int patrolCounter;
-    private static final int PATROL_DURATION = 100; // frames em modo patrulha
-    
-    /**
-     * Construtor do Inky.
-     * 
-     * param image imagem do fantasma azul/ciano
-     * param x posição inicial x
-     * param y posição inicial y
-     * param tileSize tamanho do tile
-     * param pathfindingManager gerenciador de pathfinding
-     */
-    public Inky(Image image, int x, int y, int tileSize, PathfindingManager pathfindingManager) {
-        super(image, x, y, tileSize, pathfindingManager);
-        this.patrolCounter = 0;
+    private Random random;
+    private boolean isPatrolling;
+    private int patrolTimer;
+    private static final int PATROL_DURATION = 60; // Frames
+
+    public Inky(Image image, int x, int y, int width, int height, int tileSize, 
+                PathfindingManager pathfindingManager) {
+        super(image, x, y, width, height, tileSize, pathfindingManager, 
+              "Inky", Color.CYAN);
+        this.random = new Random();
+        this.isPatrolling = true;
+        this.patrolTimer = 0;
     }
-    
-    /**
-     * Escolhe a direção usando DFS para patrulhamento errático.
-     * 
-     * Inky alterna entre patrulhar (usando DFS) e perseguir o Pacman.
-     * O uso de DFS cria um comportamento de exploração que parece
-     * aleatório, tornando Inky imprevisível.
-     * 
-     * param pacmanX posição x do Pacman
-     * param pacmanY posição y do Pacman
-     * param pacmanDirection direção do Pacman (não utilizada)
-     * return direção escolhida
-     */
+
     @Override
-    public Direction chooseDirection(int pacmanX, int pacmanY, Direction pacmanDirection) {
-        patrolCounter++;
-        
-        // Alterna entre patrulhamento e perseguição
-        boolean shouldPatrol = (patrolCounter % (PATROL_DURATION * 2)) < PATROL_DURATION;
-        
-        Direction nextDir = null;
-        
-        if (shouldPatrol) {
-            // Modo patrulha: escolhe alvo aleatório e usa DFS
+    protected Direction chooseDirection(int pacmanX, int pacmanY, Direction pacmanDirection) {
+        // Alternar entre patrulha e perseguicao a cada PATROL_DURATION frames
+        patrolTimer++;
+        if (patrolTimer >= PATROL_DURATION) {
+            isPatrolling = !isPatrolling;
+            patrolTimer = 0;
+        }
+
+        Direction nextDir;
+
+        if (isPatrolling) {
+            // Modo patrulha: escolher um alvo aleatorio no mapa
             int randomX = random.nextInt(19) * tileSize;
             int randomY = random.nextInt(21) * tileSize;
-            nextDir = pathfindingManager.getNextDirectionDFS(x, y, randomX, randomY);
+
+            nextDir = pathfindingManager.getNextDirectionDFS(
+                this.x, this.y, randomX, randomY
+            );
         } else {
-            // Modo perseguição: usa DFS para perseguir Pacman
-            nextDir = pathfindingManager.getNextDirectionDFS(x, y, pacmanX, pacmanY);
+            // Modo perseguicao: usar DFS para seguir o Pacman
+            nextDir = pathfindingManager.getNextDirectionDFS(
+                this.x, this.y, pacmanX, pacmanY
+            );
         }
-        
-        // Se não encontrou direção, mantém a atual
-        if (nextDir == null) {
-            return direction;
+
+        // Se DFS nao retornou uma direcao valida, manter a atual
+        if (nextDir == Direction.NONE) {
+            return this.direction;
         }
-        
-        // Evita reverter (mas permite ocasionalmente para mais aleatoriedade)
-        if (nextDir == direction.opposite() && random.nextInt(100) > 20) {
-            return direction;
-        }
-        
+
         return nextDir;
     }
-    
-    @Override
-    public String getAlgorithmName() {
-        return "DFS (Depth-First Search)";
-    }
-    
+
     @Override
     public void reset() {
         super.reset();
-        patrolCounter = 0;
+        this.isPatrolling = true;
+        this.patrolTimer = 0;
     }
 }

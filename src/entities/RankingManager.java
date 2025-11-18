@@ -8,7 +8,10 @@ import java.io.*;
 import java.lang.reflect.Type;
 import java.util.*;
 
-
+/**
+ * Gerenciador de ranking de pontuacoes.
+ * Usa GSON para persistir dados em JSON.
+ */
 public class RankingManager {
     private static final String FILE_NAME = "ranking.json";
     private static final int MAX_ENTRIES = 10;
@@ -16,8 +19,6 @@ public class RankingManager {
 
     /**
      * Carrega o ranking do arquivo JSON.
-     * 
-     * return lista de entradas do ranking
      */
     public static List<ScoreEntry> loadRanking() {
         try (Reader reader = new FileReader(FILE_NAME)) {
@@ -30,41 +31,38 @@ public class RankingManager {
     }
 
     /**
-     * Salva uma pontuação no ranking.
-     * 
-     * param name nome do jogador (até 3 letras)
-     * param score pontuação obtida
+     * Salva uma nova pontuacao no ranking.
      */
     public static void saveScore(String name, int score) {
         List<ScoreEntry> ranking = loadRanking();
 
         boolean updated = false;
 
-        // Atualiza se já existe entrada para este jogador
+        // Verificar se o jogador ja existe no ranking
         for (ScoreEntry entry : ranking) {
             if (entry.name.equalsIgnoreCase(name)) {
                 if (score > entry.score) {
-                    entry.score = score;
+                    entry.score = score; // Atualizar se a nova pontuacao for maior
                     updated = true;
                 }
                 break;
             }
         }
 
-        // Adiciona nova entrada se não existe
+        // Se nao existia, adicionar novo
         if (!updated && ranking.stream().noneMatch(e -> e.name.equalsIgnoreCase(name))) {
             ranking.add(new ScoreEntry(name, score));
         }
 
-        // Ordena por pontuação decrescente
+        // Ordenar por pontuacao decrescente
         ranking.sort((a, b) -> b.score - a.score);
 
-        // Limita a 10 entradas
+        // Limitar a 10 entradas
         if (ranking.size() > MAX_ENTRIES) {
             ranking = ranking.subList(0, MAX_ENTRIES);
         }
 
-        // Salva no arquivo
+        // Salvar no arquivo
         try (Writer writer = new FileWriter(FILE_NAME)) {
             gson.toJson(ranking, writer);
         } catch (IOException e) {
