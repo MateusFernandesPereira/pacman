@@ -1,391 +1,754 @@
-# Pacman - Fase 1: Algoritmos de Grafos e IA de Fantasmas
+# 🎮 Pac-Man com Algoritmos de Grafos
 
-**Disciplina:** Estruturas de Dados II (ED II)  
-**Instituicao:** UNESP - Universidade Estadual Paulista "Julio de Mesquita Filho"  
-**Curso:** Bacharelado em Sistemas de Informacao  
-**Fase:** 1 de 4 (Core Academic Implementation)
+<div align="center">
 
----
+**Trabalho Final - Estrutura de Dados II**  
+*UNESP - Universidade Estadual Paulista "Júlio de Mesquita Filho"*  
+*Bacharelado em Sistemas de Informação*
 
-## Visao Geral
-
-Este projeto implementa um jogo Pacman completo e funcional com foco em **algoritmos de grafos** e **inteligencia artificial** para controle dos fantasmas. A Fase 1 representa a implementacao central dos requisitos academicos de Estruturas de Dados II.
-
-### Principais Caracteristicas
-
-- **Modelagem Completa do Labirinto como Grafo**
-  - Vertices representam celulas navegaveis
-  - Arestas conectam celulas adjacentes sem paredes
-  - Grafo nao-direcionado com pesos uniformes
-
-- **4 Algoritmos de Busca em Grafos**
-  - Dijkstra (caminho mais curto com pesos)
-  - A* (busca heuristica com Manhattan distance)
-  - BFS (busca em largura)
-  - DFS (busca em profundidade)
-
-- **4 Fantasmas Inteligentes**
-  - Blinky (Vermelho) - Dijkstra - Persegue diretamente
-  - Pinky (Rosa) - A* - Tenta interceptar
-  - Inky (Azul) - DFS - Comportamento exploratorio
-  - Clyde (Laranja) - BFS - Alterna entre perseguir e fugir
-
-- **Desempenho Otimizado**
-  - 60 FPS (frames por segundo)
-  - Atualizacao de IA a cada 4 frames
-  - Codigo completo sem TODOs ou placeholders
+</div>
 
 ---
 
-## Requisitos
+## 📋 Sobre o Projeto
 
-- **Java JDK 11 ou superior**
-- **Biblioteca Gson** (incluida em `lib/gson-2.8.9.jar`)
+Este repositório apresenta o desenvolvimento de um jogo no estilo clássico Pac-Man, utilizando a linguagem **Java** e conceitos de **Orientação a Objetos**. O diferencial deste projeto está na aplicação prática de **4 Algoritmos de Busca em Grafos** para controlar a inteligência artificial dos fantasmas, cada um com comportamento único e estratégias distintas.
+
+### 🎯 Objetivos Acadêmicos
+
+- Aplicar conceitos de **Teoria dos Grafos** em um problema real
+- Implementar e comparar **algoritmos clássicos de busca**
+- Desenvolver **inteligência artificial** para NPCs (fantasmas)
+- Analisar **complexidade computacional** em tempo real
+- Utilizar **Design Patterns** (Facade, Template Method)
 
 ---
 
-## Como Compilar e Executar
+## 🚀 Como Executar
+
+### Requisitos
+- **Java JDK 11** ou superior
+- **Biblioteca Gson** (incluída em `lib/gson-2.8.9.jar`)
 
 ### Windows
-
-#### Compilar:
 ```cmd
 compile.bat
-```
-
-#### Executar o jogo:
-```cmd
 run.bat
 ```
 
-#### Executar com menu:
-```cmd
-run-menu.bat
-```
-
 ### Linux / macOS
-
-#### Compilar:
-```bash
-./compile.sh
-```
-
-#### Executar o jogo:
-```bash
-./run.sh
-```
-
-#### Executar com menu:
-```bash
-./run-menu.sh
-```
-
-### Comandos Manuais
-
-Se preferir compilar manualmente:
-
-**Windows:**
-```cmd
-mkdir bin
-dir /s /b src\*.java > sources.txt
-javac -d bin -cp "lib/*" @sources.txt
-java -cp "lib/*;bin" App
-```
-
-**Linux/macOS:**
-```bash
-mkdir -p bin
-find src -name "*.java" > sources.txt
-javac -d bin -cp "lib/*" @sources.txt
-java -cp "lib/*:bin" App
-```
+Não é necessário compilação manual - o projeto já está pronto para execução. Se necessário, use os comandos Java padrão.
 
 ---
 
-## Estrutura do Projeto
+## 🧠 Algoritmos Implementados
 
-```
-pacman_fase1/
-├── src/
-│   ├── graph/                   # Estruturas de Grafo
-│   │   ├── Graph.java           # Grafo principal
-│   │   ├── Node.java            # No/Vertice
-│   │   └── algorithms/          # Algoritmos de busca
-│   │       ├── Dijkstra.java    # O((V+E) log V)
-│   │       ├── AStar.java       # O(E log V)
-│   │       ├── BFS.java         # O(V + E)
-│   │       └── DFS.java         # O(V + E)
-│   │
-│   ├── models/                  # Modelos de dados
-│   │   ├── Position.java        # Posicao (x, y)
-│   │   └── Direction.java       # Enum de direcoes
-│   │
-│   ├── managers/                # Gerenciadores
-│   │   └── PathfindingManager.java  # Facade para pathfinding
-│   │
-│   ├── entities/                # Entidades do jogo
-│   │   ├── Ghost.java           # Classe abstrata base
-│   │   ├── Blinky.java          # Vermelho - Dijkstra
-│   │   ├── Pinky.java           # Rosa - A*
-│   │   ├── Inky.java            # Azul - DFS
-│   │   ├── Clyde.java           # Laranja - BFS
-│   │   ├── PacMan.java          # Jogo principal
-│   │   ├── RankingManager.java  # Gerenciador de ranking
-│   │   └── ScoreEntry.java      # Entrada de pontuacao
-│   │
-│   ├── App.java                 # Ponto de entrada principal
-│   └── MainMenu.java            # Menu inicial
-│
-├── lib/
-│   └── gson-2.8.9.jar           # Biblioteca JSON
-│
-├── Images/                      # Sprites e recursos graficos
-│   ├── pacmanUp.png
-│   ├── pacmanDown.png
-│   ├── pacmanLeft.png
-│   ├── pacmanRight.png
-│   ├── redGhost.png
-│   ├── pinkGhost.png
-│   ├── blueGhost.png
-│   ├── orangeGhost.png
-│   └── wall.png
-│
-├── compile.bat                  # Script de compilacao Windows
-├── compile.sh                   # Script de compilacao Linux
-├── run.bat                      # Script de execucao Windows
-├── run.sh                       # Script de execucao Linux
-├── run-menu.bat                 # Menu Windows
-├── run-menu.sh                  # Menu Linux
-└── README.md                    # Este arquivo
-```
+O projeto utiliza 4 algoritmos clássicos de busca em grafos, cada um controlando um fantasma diferente:
 
----
+### 1️⃣ Dijkstra - Blinky (Fantasma Vermelho) 🔴
 
-## Algoritmos Implementados
+**Algoritmo de Dijkstra** garante encontrar o **caminho mais curto** entre dois pontos em um grafo com pesos não-negativos.
 
-### 1. Dijkstra (Caminho Mais Curto)
-
-**Arquivo:** `src/graph/algorithms/Dijkstra.java`
-
+#### 📊 Características
 - **Complexidade:** O((V + E) log V)
-- **Uso:** Blinky (Fantasma Vermelho)
-- **Caracteristica:** Garante caminho otimo, perseguicao direta e agressiva
+- **Estrutura:** Priority Queue (fila de prioridade)
+- **Garantia:** Sempre encontra o caminho ótimo
 
-### 2. A* (Busca Heuristica)
+#### 💻 Implementação do Algoritmo
 
-**Arquivo:** `src/graph/algorithms/AStar.java`
+```java
+public static List<Node> findPath(Node start, Node goal) {
+    // Mapa de distâncias (infinito por padrão)
+    Map<Node, Double> distances = new HashMap<>();
+    distances.put(start, 0.0);
 
-- **Complexidade:** O(E log V) em casos medios
-- **Heuristica:** Distancia de Manhattan
-- **Uso:** Pinky (Fantasma Rosa)
-- **Caracteristica:** Rapido e eficiente, tenta emboscar o Pacman
+    // Mapa de predecessores para reconstruir o caminho
+    Map<Node, Node> predecessors = new HashMap<>();
 
-### 3. BFS (Busca em Largura)
+    // Fila de prioridade ordenada por distância
+    PriorityQueue<NodeDistance> pq = new PriorityQueue<>(
+        Comparator.comparingDouble(nd -> nd.distance)
+    );
+    pq.offer(new NodeDistance(start, 0.0));
 
-**Arquivo:** `src/graph/algorithms/BFS.java`
+    Set<Node> visited = new HashSet<>();
 
+    while (!pq.isEmpty()) {
+        NodeDistance current = pq.poll();
+        Node currentNode = current.node;
+
+        if (visited.contains(currentNode)) continue;
+        visited.add(currentNode);
+
+        // Se chegamos ao objetivo, reconstruir e retornar o caminho
+        if (currentNode.equals(goal)) {
+            return reconstructPath(predecessors, start, goal);
+        }
+
+        // Explorar todos os vizinhos
+        for (Node neighbor : currentNode.getAllNeighbors()) {
+            if (visited.contains(neighbor)) continue;
+
+            // Peso uniforme = 1 para todas as arestas
+            double newDistance = distances.get(currentNode) + 1.0;
+            double currentDistance = distances.getOrDefault(neighbor, Double.POSITIVE_INFINITY);
+
+            // Se encontramos um caminho melhor, atualizar
+            if (newDistance < currentDistance) {
+                distances.put(neighbor, newDistance);
+                predecessors.put(neighbor, currentNode);
+                pq.offer(new NodeDistance(neighbor, newDistance));
+            }
+        }
+    }
+
+    return new ArrayList<>(); // Nenhum caminho encontrado
+}
+```
+
+#### 🎮 Integração no Fantasma Blinky
+
+```java
+@Override
+protected Direction chooseDirection(int pacmanX, int pacmanY, Direction pacmanDirection) {
+    // Perseguição direta usando Dijkstra - sempre o caminho mais curto
+    Direction nextDir = pathfindingManager.getNextDirectionDijkstra(
+        this.x, this.y, pacmanX, pacmanY
+    );
+
+    // Se Dijkstra não retornou uma direção válida, manter a direção atual
+    if (nextDir == Direction.NONE) {
+        return this.direction;
+    }
+
+    return nextDir;
+}
+```
+
+**🎯 Comportamento:** Blinky é o fantasma mais perigoso! Ele sempre persegue o Pac-Man pelo caminho mais curto possível, sendo agressivo, direto e implacável.
+
+---
+
+### 2️⃣ A* (A-Star) - Pinky (Fantasma Rosa) 🩷
+
+**Algoritmo A*** combina o custo real do caminho com uma **heurística** (distância de Manhattan) para encontrar caminhos de forma eficiente.
+
+#### 📊 Características
+- **Complexidade:** O(E log V) em casos médios
+- **Heurística:** Distância de Manhattan
+- **Função:** f(n) = g(n) + h(n)
+  - g(n) = custo real do início até n
+  - h(n) = estimativa heurística até o objetivo
+
+#### 💻 Implementação do Algoritmo
+
+```java
+public static List<Node> findPath(Node start, Node goal) {
+    // gScore: custo real do início até cada nó
+    Map<Node, Double> gScore = new HashMap<>();
+    gScore.put(start, 0.0);
+
+    // fScore: gScore + heurística
+    Map<Node, Double> fScore = new HashMap<>();
+    fScore.put(start, heuristic(start, goal));
+
+    // Predecessores para reconstruir o caminho
+    Map<Node, Node> predecessors = new HashMap<>();
+
+    // Open set: nós a serem avaliados
+    PriorityQueue<NodeScore> openSet = new PriorityQueue<>(
+        Comparator.comparingDouble(ns -> ns.fScore)
+    );
+    openSet.offer(new NodeScore(start, fScore.get(start)));
+
+    Set<Node> closedSet = new HashSet<>();
+
+    while (!openSet.isEmpty()) {
+        NodeScore current = openSet.poll();
+        Node currentNode = current.node;
+
+        // Se chegamos ao objetivo, reconstruir caminho
+        if (currentNode.equals(goal)) {
+            return reconstructPath(predecessors, start, goal);
+        }
+
+        closedSet.add(currentNode);
+
+        // Explorar vizinhos
+        for (Node neighbor : currentNode.getAllNeighbors()) {
+            if (closedSet.contains(neighbor)) continue;
+
+            // Calcular novo gScore
+            double tentativeGScore = gScore.get(currentNode) + 1.0;
+            double currentGScore = gScore.getOrDefault(neighbor, Double.POSITIVE_INFINITY);
+
+            // Se encontramos um caminho melhor
+            if (tentativeGScore < currentGScore) {
+                predecessors.put(neighbor, currentNode);
+                gScore.put(neighbor, tentativeGScore);
+                double newFScore = tentativeGScore + heuristic(neighbor, goal);
+                fScore.put(neighbor, newFScore);
+
+                openSet.offer(new NodeScore(neighbor, newFScore));
+            }
+        }
+    }
+
+    return new ArrayList<>();
+}
+
+// Heurística de Manhattan
+private static double heuristic(Node from, Node to) {
+    Position fromPos = from.getPosition();
+    Position toPos = to.getPosition();
+    return fromPos.manhattanDistance(toPos);
+}
+```
+
+#### 🎮 Integração no Fantasma Pinky
+
+```java
+@Override
+protected Direction chooseDirection(int pacmanX, int pacmanY, Direction pacmanDirection) {
+    // Previsão: calcular 4 tiles à frente da direção do Pacman
+    int targetX = pacmanX + (pacmanDirection.dx * tileSize * 4);
+    int targetY = pacmanY + (pacmanDirection.dy * tileSize * 4);
+
+    // Usar A* para emboscada eficiente
+    Direction nextDir = pathfindingManager.getNextDirectionAStar(
+        this.x, this.y, targetX, targetY
+    );
+
+    // Se A* não retornou uma direção válida, tentar ir direto ao Pacman
+    if (nextDir == Direction.NONE) {
+        nextDir = pathfindingManager.getNextDirectionAStar(
+            this.x, this.y, pacmanX, pacmanY
+        );
+    }
+
+    if (nextDir == Direction.NONE) {
+        return this.direction;
+    }
+
+    return nextDir;
+}
+```
+
+**🎯 Comportamento:** Pinky é estratégico e astuto! Ele não persegue diretamente, mas tenta **emboscar** o Pac-Man prevendo sua posição futura (4 tiles à frente), usando A* para chegar lá rapidamente.
+
+---
+
+### 3️⃣ BFS (Busca em Largura) - Clyde (Fantasma Laranja) 🟠
+
+**BFS (Breadth-First Search)** explora o grafo em "ondas" concêntricas, garantindo encontrar o caminho com menor número de arestas.
+
+#### 📊 Características
 - **Complexidade:** O(V + E)
-- **Uso:** Clyde (Fantasma Laranja)
-- **Caracteristica:** Explora em "ondas", comportamento timido (persegue/foge)
+- **Estrutura:** Queue FIFO (fila)
+- **Exploração:** Camada por camada
 
-### 4. DFS (Busca em Profundidade)
+#### 💻 Implementação do Algoritmo
 
-**Arquivo:** `src/graph/algorithms/DFS.java`
+```java
+public static List<Node> findPath(Node start, Node goal) {
+    // Fila FIFO para BFS
+    Queue<Node> queue = new LinkedList<>();
+    queue.offer(start);
 
+    // Conjunto de nós visitados
+    Set<Node> visited = new HashSet<>();
+    visited.add(start);
+
+    // Mapa de predecessores para reconstruir o caminho
+    Map<Node, Node> predecessors = new HashMap<>();
+
+    while (!queue.isEmpty()) {
+        Node current = queue.poll();
+
+        // Se chegamos ao objetivo, reconstruir caminho
+        if (current.equals(goal)) {
+            return reconstructPath(predecessors, start, goal);
+        }
+
+        // Explorar todos os vizinhos
+        for (Node neighbor : current.getAllNeighbors()) {
+            if (!visited.contains(neighbor)) {
+                visited.add(neighbor);
+                predecessors.put(neighbor, current);
+                queue.offer(neighbor);
+            }
+        }
+    }
+
+    return new ArrayList<>();
+}
+
+// Método auxiliar para calcular distância
+public static int getDistance(Node start, Node goal) {
+    Queue<Node> queue = new LinkedList<>();
+    queue.offer(start);
+
+    Set<Node> visited = new HashSet<>();
+    visited.add(start);
+
+    Map<Node, Integer> distances = new HashMap<>();
+    distances.put(start, 0);
+
+    while (!queue.isEmpty()) {
+        Node current = queue.poll();
+        int currentDist = distances.get(current);
+
+        if (current.equals(goal)) {
+            return currentDist;
+        }
+
+        for (Node neighbor : current.getAllNeighbors()) {
+            if (!visited.contains(neighbor)) {
+                visited.add(neighbor);
+                distances.put(neighbor, currentDist + 1);
+                queue.offer(neighbor);
+            }
+        }
+    }
+
+    return -1; // Nenhum caminho encontrado
+}
+```
+
+#### 🎮 Integração no Fantasma Clyde
+
+```java
+@Override
+protected Direction chooseDirection(int pacmanX, int pacmanY, Direction pacmanDirection) {
+    // Calcular distância até o Pacman usando BFS
+    int distance = pathfindingManager.getDistanceBFS(this.x, this.y, pacmanX, pacmanY);
+
+    Direction nextDir;
+
+    if (distance > FLEE_DISTANCE || distance == -1) {
+        // Longe: perseguir o Pacman
+        nextDir = pathfindingManager.getNextDirectionBFS(
+            this.x, this.y, pacmanX, pacmanY
+        );
+    } else {
+        // Perto: fugir para o canto
+        nextDir = pathfindingManager.getNextDirectionBFS(
+            this.x, this.y, cornerX, cornerY
+        );
+    }
+
+    if (nextDir == Direction.NONE) {
+        return this.direction;
+    }
+
+    return nextDir;
+}
+```
+
+**🎯 Comportamento:** Clyde é tímido e indeciso! Quando está **longe** do Pac-Man (> 8 tiles), ele persegue. Mas quando fica **perto** (≤ 8 tiles), ele foge para o canto inferior esquerdo, criando um comportamento menos ameaçador.
+
+---
+
+### 4️⃣ DFS (Busca em Profundidade) - Inky (Fantasma Azul) 🔵
+
+**DFS (Depth-First Search)** explora o máximo possível ao longo de cada ramo antes de retroceder, criando comportamento imprevisível.
+
+#### 📊 Características
 - **Complexidade:** O(V + E)
-- **Uso:** Inky (Fantasma Azul)
-- **Caracteristica:** Exploracao profunda, comportamento imprevisivel
+- **Estrutura:** Stack LIFO (pilha)
+- **Exploração:** Profunda e aleatória
+- **Garantia:** NÃO garante caminho ótimo
+
+#### 💻 Implementação do Algoritmo
+
+```java
+public static List<Node> findPath(Node start, Node goal) {
+    // Pilha LIFO para DFS
+    Stack<Node> stack = new Stack<>();
+    stack.push(start);
+
+    // Conjunto de nós visitados
+    Set<Node> visited = new HashSet<>();
+    visited.add(start);
+
+    // Mapa de predecessores para reconstruir o caminho
+    Map<Node, Node> predecessors = new HashMap<>();
+
+    while (!stack.isEmpty()) {
+        Node current = stack.pop();
+
+        // Se chegamos ao objetivo, reconstruir caminho
+        if (current.equals(goal)) {
+            return reconstructPath(predecessors, start, goal);
+        }
+
+        // Explorar todos os vizinhos (em ordem aleatória para mais imprevisibilidade)
+        List<Node> neighbors = new ArrayList<>(current.getAllNeighbors());
+        Collections.shuffle(neighbors); // Aleatoriza a exploração
+
+        for (Node neighbor : neighbors) {
+            if (!visited.contains(neighbor)) {
+                visited.add(neighbor);
+                predecessors.put(neighbor, current);
+                stack.push(neighbor);
+            }
+        }
+    }
+
+    return new ArrayList<>();
+}
+```
+
+#### 🎮 Integração no Fantasma Inky
+
+```java
+@Override
+protected Direction chooseDirection(int pacmanX, int pacmanY, Direction pacmanDirection) {
+    // Alternar entre patrulha e perseguição a cada PATROL_DURATION frames
+    patrolTimer++;
+    if (patrolTimer >= PATROL_DURATION) {
+        isPatrolling = !isPatrolling;
+        patrolTimer = 0;
+    }
+
+    Direction nextDir;
+
+    if (isPatrolling) {
+        // Modo patrulha: escolher um alvo aleatório no mapa
+        int randomX = random.nextInt(19) * tileSize;
+        int randomY = random.nextInt(21) * tileSize;
+
+        nextDir = pathfindingManager.getNextDirectionDFS(
+            this.x, this.y, randomX, randomY
+        );
+    } else {
+        // Modo perseguição: usar DFS para seguir o Pacman
+        nextDir = pathfindingManager.getNextDirectionDFS(
+            this.x, this.y, pacmanX, pacmanY
+        );
+    }
+
+    if (nextDir == Direction.NONE) {
+        return this.direction;
+    }
+
+    return nextDir;
+}
+```
+
+**🎯 Comportamento:** Inky é imprevisível e errático! Ele alterna entre **patrulhamento aleatório** (explorando o mapa) e **perseguição** usando DFS, criando movimentos difíceis de prever e cobrindo áreas do labirinto de forma não-ótima.
 
 ---
 
-## Comportamento dos Fantasmas
+## 🏗️ Arquitetura do Sistema
 
-### Blinky (Vermelho) - O Perseguidor
-- **Algoritmo:** Dijkstra
-- **Estrategia:** Persegue o Pacman diretamente pelo caminho mais curto
-- **Personalidade:** Agressivo, direto, implacavel
-- **Perigo:** ALTO - Sempre usa o caminho otimo
+### PathfindingManager (Facade Pattern)
 
-### Pinky (Rosa) - O Emboscador
-- **Algoritmo:** A*
-- **Estrategia:** Preve a posicao do Pacman (4 tiles a frente) e tenta interceptar
-- **Personalidade:** Estrategico, astuto, tatico
-- **Perigo:** ALTO - Rapido e surpreendente
+O `PathfindingManager` atua como uma **Facade** (fachada), simplificando o uso dos algoritmos de pathfinding:
 
-### Inky (Azul) - O Patrulheiro
-- **Algoritmo:** DFS
-- **Estrategia:** Alterna entre patrulhamento aleatorio e perseguicao
-- **Personalidade:** Imprevisivel, erratico, explorador
-- **Perigo:** MEDIO - Dificil de prever
+```java
+public class PathfindingManager {
+    private final Graph graph;
 
-### Clyde (Laranja) - O Timido
-- **Algoritmo:** BFS
-- **Estrategia:** Persegue quando longe (> 8 tiles), foge quando perto
-- **Personalidade:** Timido, indeciso, covarde
-- **Perigo:** BAIXO - Menos ameacador
+    // Métodos simplificados para cada algoritmo
+    public Direction getNextDirectionDijkstra(int startX, int startY, int goalX, int goalY) {
+        return getNextDirection(startX, startY, goalX, goalY, PathAlgorithm.DIJKSTRA);
+    }
+
+    public Direction getNextDirectionAStar(int startX, int startY, int goalX, int goalY) {
+        return getNextDirection(startX, startY, goalX, goalY, PathAlgorithm.ASTAR);
+    }
+
+    public Direction getNextDirectionBFS(int startX, int startY, int goalX, int goalY) {
+        return getNextDirection(startX, startY, goalX, goalY, PathAlgorithm.BFS);
+    }
+
+    public Direction getNextDirectionDFS(int startX, int startY, int goalX, int goalY) {
+        return getNextDirection(startX, startY, goalX, goalY, PathAlgorithm.DFS);
+    }
+
+    // Método genérico que executa o algoritmo e retorna a próxima direção
+    private Direction getNextDirection(int startX, int startY, int goalX, int goalY, 
+                                      PathAlgorithm algorithm) {
+        Node start = graph.getNode(startX, startY);
+        Node goal = graph.getNode(goalX, goalY);
+
+        if (start == null || goal == null) return Direction.NONE;
+        if (start.equals(goal)) return Direction.NONE;
+
+        // Encontrar caminho usando o algoritmo especificado
+        List<Node> path;
+        switch (algorithm) {
+            case DIJKSTRA: path = Dijkstra.findPath(start, goal); break;
+            case ASTAR: path = AStar.findPath(start, goal); break;
+            case BFS: path = BFS.findPath(start, goal); break;
+            case DFS: path = DFS.findPath(start, goal); break;
+            default: return Direction.NONE;
+        }
+
+        if (path.isEmpty() || path.size() < 2) return Direction.NONE;
+
+        // O próximo nó é o segundo elemento do caminho (índice 1)
+        Node nextNode = path.get(1);
+
+        // Determinar a direção para o próximo nó
+        return start.getDirectionTo(nextNode);
+    }
+}
+```
+
+**Vantagens do Facade:**
+- Interface simplificada para os fantasmas
+- Encapsula a complexidade dos algoritmos
+- Facilita manutenção e testes
+- Converte automaticamente caminhos em direções
 
 ---
 
-## Como Jogar
+### Direction (Enum)
 
-### Controles
-- **Setas do teclado** - Mover o Pacman
-- **ESC** - Sair (na tela de game over)
+O enum `Direction` representa as 4 direções possíveis de movimento no jogo:
 
-### Objetivo
-- Comer todas as bolinhas brancas
-- Evitar os fantasmas
-- Fazer a maior pontuacao possivel
+```java
+public enum Direction {
+    UP(0, -1, 'U'),
+    DOWN(0, 1, 'D'),
+    LEFT(-1, 0, 'L'),
+    RIGHT(1, 0, 'R'),
+    NONE(0, 0, 'N');
 
-### Pontuacao
-- Cada bolinha: 10 pontos
-- 3 vidas iniciais
-- Game Over quando perder todas as vidas
+    public final int dx;  // Delta X
+    public final int dy;  // Delta Y
+    public final char code; // Código de caractere
+
+    Direction(int dx, int dy, char code) {
+        this.dx = dx;
+        this.dy = dy;
+        this.code = code;
+    }
+
+    // Retorna a direção oposta
+    public Direction opposite() {
+        switch (this) {
+            case UP: return DOWN;
+            case DOWN: return UP;
+            case LEFT: return RIGHT;
+            case RIGHT: return LEFT;
+            default: return NONE;
+        }
+    }
+}
+```
+
+**Funcionalidades:**
+- `dx, dy`: Vetores de movimento (ex: UP = (0, -1))
+- `code`: Código de caractere para serialização
+- `opposite()`: Retorna direção oposta (útil para evitar reversões)
+- `NONE`: Representa ausência de movimento
 
 ---
 
-## Analise de Complexidade
+## 📊 Análise de Complexidade
 
 ### Grafo do Labirinto
-- **Vertices (V):** ~250 celulas navegaveis
-- **Arestas (E):** ~400 conexoes entre celulas adjacentes
-- **Tipo:** Grafo nao-direcionado, pesos uniformes (peso = 1)
+- **Vértices (V):** ~250 células navegáveis
+- **Arestas (E):** ~400 conexões entre células adjacentes
+- **Tipo:** Grafo não-direcionado, pesos uniformes (peso = 1)
 
-### Desempenho dos Algoritmos
+### Comparação dos Algoritmos
 
-| Algoritmo | Tempo (Pior Caso) | Espaco | Garante Otimo? |
-|-----------|-------------------|--------|----------------|
-| Dijkstra  | O((V+E) log V)    | O(V)   | Sim            |
-| A*        | O(E log V)        | O(V)   | Sim*           |
-| BFS       | O(V + E)          | O(V)   | Sim**          |
-| DFS       | O(V + E)          | O(V)   | Nao            |
+| Algoritmo | Complexidade Tempo | Complexidade Espaço | Garante Ótimo? | Uso no Jogo |
+|-----------|-------------------|---------------------|----------------|-------------|
+| **Dijkstra** | O((V+E) log V) | O(V) | ✅ Sim | Blinky - Perseguição direta |
+| **A*** | O(E log V) | O(V) | ✅ Sim* | Pinky - Emboscada inteligente |
+| **BFS** | O(V + E) | O(V) | ✅ Sim** | Clyde - Comportamento tímido |
+| **DFS** | O(V + E) | O(V) | ❌ Não | Inky - Patrulhamento errático |
 
-\* Com heuristica admissivel  
-\*\* Para grafos nao-ponderados
+\* Com heurística admissível (Manhattan)  
+\*\* Para grafos não-ponderados
 
 ### Performance em Tempo Real
 - **FPS:** 60 (16ms por frame)
-- **Atualizacao de IA:** A cada 4 frames (~15 vezes por segundo)
+- **Atualização de IA:** A cada 4 frames (~15 vezes por segundo)
 - **Tempo de pathfinding:** < 1ms por fantasma
+- **Total de cálculos:** ~60 pathfindings por segundo (4 fantasmas × 15 updates)
 
 ---
 
-## Detalhes Tecnicos
+## 🎮 Resumo dos Fantasmas
+
+| Fantasma | Cor | Algoritmo | Personalidade | Estratégia | Nível de Perigo |
+|----------|-----|-----------|---------------|------------|-----------------|
+| **Blinky** | 🔴 Vermelho | Dijkstra | Agressivo, direto | Perseguição pelo caminho mais curto | 🔥🔥🔥 ALTO |
+| **Pinky** | 🩷 Rosa | A* | Estratégico, astuto | Emboscada prevendo posição futura | 🔥🔥🔥 ALTO |
+| **Inky** | 🔵 Azul | DFS | Imprevisível, errático | Patrulhamento + perseguição aleatória | 🔥🔥 MÉDIO |
+| **Clyde** | 🟠 Laranja | BFS | Tímido, covarde | Persegue longe, foge perto | 🔥 BAIXO |
+
+---
+
+## 🎯 Como Jogar
+
+### Controles
+- **Setas do teclado** ⬆️⬇️⬅️➡️ - Mover o Pac-Man
+- **ESC** - Sair do jogo
+
+### Objetivo
+- 🟡 Comer todas as bolinhas brancas
+- 👻 Evitar os 4 fantasmas
+- 🏆 Fazer a maior pontuação possível
+
+### Pontuação
+- Cada bolinha: **10 pontos**
+- Vidas iniciais: **3**
+- Game Over: quando perder todas as vidas
+
+---
+
+## 📁 Estrutura do Projeto
+
+```
+pacman/
+├── src/
+│   ├── graph/                      # 📊 Estruturas de Grafo
+│   │   ├── Graph.java              # Grafo principal do labirinto
+│   │   ├── Node.java               # Nó/Vértice do grafo
+│   │   └── algorithms/             # 🧠 Algoritmos de busca
+│   │       ├── Dijkstra.java       # Caminho mais curto
+│   │       ├── AStar.java          # Busca heurística
+│   │       ├── BFS.java            # Busca em largura
+│   │       └── DFS.java            # Busca em profundidade
+│   │
+│   ├── models/                     # 📐 Modelos de dados
+│   │   ├── Position.java           # Posição (x, y)
+│   │   └── Direction.java          # Enum de direções
+│   │
+│   ├── managers/                   # 🎛️ Gerenciadores
+│   │   └── PathfindingManager.java # Facade para pathfinding
+│   │
+│   ├── entities/                   # 👾 Entidades do jogo
+│   │   ├── Ghost.java              # Classe abstrata base
+│   │   ├── Blinky.java             # 🔴 Vermelho - Dijkstra
+│   │   ├── Pinky.java              # 🩷 Rosa - A*
+│   │   ├── Inky.java               # 🔵 Azul - DFS
+│   │   ├── Clyde.java              # 🟠 Laranja - BFS
+│   │   ├── Pacman.java             # 🟡 Jogador
+│   │   ├── RankingManager.java     # Sistema de ranking
+│   │   └── ScoreEntry.java         # Entrada de pontuação
+│   │
+│   ├── App.java                    # 🚀 Ponto de entrada
+│   └── MainMenu.java               # 📋 Menu inicial
+│
+├── lib/
+│   └── gson-2.8.9.jar              # Biblioteca JSON
+│
+├── Images/                         # 🎨 Sprites e recursos gráficos
+│
+├── compile.bat                     # Script de compilação Windows
+└── run.bat                         # Script de execução Windows
+```
+
+---
+
+## 🔬 Detalhes Técnicos
 
 ### Sistema de Grafos
-1. O labirinto eh convertido em um grafo onde:
-   - Cada celula navegavel = 1 vertice
-   - Celulas adjacentes sem parede = aresta bidirecional
-2. Os algoritmos trabalham sobre este grafo para calcular caminhos
-3. O PathfindingManager atua como Facade para simplificar o uso dos algoritmos
 
-### Integracao com Gameplay
-1. **Inicializacao:** Grafo eh construido a partir do mapa de tiles
-2. **Loop do Jogo (60 FPS):** 
-   - Mover Pacman baseado em input do usuario
-   - Mover fantasmas (fisica a 60 FPS)
-   - Atualizar IA dos fantasmas (a cada 4 frames)
-   - Detectar colisoes
-   - Renderizar frame
-3. **Atualizacao de IA (15 vezes/segundo):**
-   - Cada fantasma calcula proximo movimento usando seu algoritmo
-   - Direcao eh atualizada apenas quando alinhado com o grid
+1. **Construção do Grafo:**
+   - O labirinto 2D é convertido em um grafo
+   - Cada célula navegável = 1 vértice
+   - Células adjacentes sem parede = aresta bidirecional
+   - Peso uniforme = 1 para todas as arestas
 
----
+2. **Pathfinding em Tempo Real:**
+   - Algoritmos trabalham sobre o grafo para calcular caminhos
+   - PathfindingManager converte caminhos em direções
+   - Atualização a cada 4 frames para otimização
 
-## Resolucao de Problemas
-
-### Erro de compilacao
-- Verifique se o Java JDK 11+ esta instalado: `java -version`
-- Verifique se a biblioteca gson esta em `lib/gson-2.8.9.jar`
-- Execute o script de compilacao correspondente ao seu sistema
-
-### Imagens nao aparecem
-- Certifique-se de que a pasta `Images/` existe
-- Verifique se todos os arquivos PNG estao presentes
-- Se faltar imagens, o jogo usara cores solidas como fallback
-
-### Fantasmas nao se movem corretamente
-- Verifique se o grafo foi construido corretamente (mensagem no console)
-- O console deve mostrar: "Grafo: Graph{vertices=~250, edges=~400}"
-- Se os valores forem muito diferentes, pode haver problema no mapa
-
-### Performance baixa
-- O jogo foi otimizado para 60 FPS
-- Se estiver lento, verifique a carga da CPU
-- Os algoritmos sao eficientes e nao devem causar lentidao
+3. **Integração com Gameplay:**
+   ```
+   Inicialização → Construir Grafo do Labirinto
+                ↓
+   Loop 60 FPS → Mover Pac-Man (input do usuário)
+                → Mover Fantasmas (física)
+                → Atualizar IA (a cada 4 frames)
+                → Detectar colisões
+                → Renderizar frame
+   ```
 
 ---
 
-## Objetivos Academicos
+## 🎓 Conceitos de Estrutura de Dados II Aplicados
 
-Este projeto atende aos requisitos da disciplina ED II:
+### ✅ Grafos
+- Modelagem de labirinto como grafo não-direcionado
+- Vértices, arestas e conectividade
+- Representação por lista de adjacências
 
-1. **Modelagem de Problemas Reais com Grafos**
-   - Transformar um labirinto 2D em estrutura de grafo
-   - Compreender vertices, arestas e conectividade
+### ✅ Algoritmos de Busca
+- **Dijkstra:** Caminho mais curto com pesos
+- **A*:** Busca heurística informada
+- **BFS:** Busca em largura (não-informada)
+- **DFS:** Busca em profundidade (não-informada)
 
-2. **Implementacao de Algoritmos Classicos**
-   - Dijkstra para caminhos mais curtos
-   - A* para busca heuristica
-   - BFS para exploracao em largura
-   - DFS para exploracao em profundidade
+### ✅ Estruturas de Dados
+- **Priority Queue:** Dijkstra e A*
+- **Queue (FIFO):** BFS
+- **Stack (LIFO):** DFS
+- **HashMap:** Distâncias e predecessores
+- **HashSet:** Nós visitados
 
-3. **Analise de Complexidade**
-   - Tempo: O(V + E), O(V^2), O(E log V)
-   - Espaco: O(V)
-   - Comparacao de desempenho
+### ✅ Análise de Complexidade
+- Notação Big O
+- Complexidade de tempo e espaço
+- Trade-offs entre algoritmos
 
-4. **Aplicacao Pratica**
-   - IA para jogos
-   - Pathfinding em tempo real
-   - Design patterns (Template Method, Facade)
-
----
-
-## Proximas Fases (Planejamento)
-
-### Fase 2: Otimizacoes Avancadas
-- Algoritmo de Floyd-Warshall para todos os pares
-- Jump Point Search (JPS)
-- Otimizacoes de cache para pathfinding
-
-### Fase 3: Power-ups e Modos
-- Power pellets com inversao de perseguicao
-- Modos dos fantasmas (scatter, chase, frightened)
-- Sistema de dificuldade progressiva
-
-### Fase 4: Analise e Visualizacao
-- Visualizacao de caminhos em tempo real
-- Estatisticas de desempenho dos algoritmos
-- Sistema de replay para analise
+### ✅ Design Patterns
+- **Facade:** PathfindingManager
+- **Template Method:** Classe abstrata Ghost
+- **Enum:** Direction
 
 ---
 
-## Autores
+## 🏆 Diferenciais do Projeto
 
-**Projeto Academico**  
-Disciplina: Estruturas de Dados II  
-Instituicao: UNESP - Bacharelado em Sistemas de Informacao  
-
-**Fase 1 - Core Implementation**  
-Data: Novembro 2024  
-
----
-
-## Licenca
-
-Este eh um projeto academico desenvolvido para fins educacionais.
+- ✨ **4 algoritmos diferentes** implementados e funcionais
+- 🎮 **Comportamentos únicos** para cada fantasma
+- 📊 **Análise comparativa** de desempenho
+- 🏗️ **Arquitetura limpa** com design patterns
+- 📝 **Código bem documentado** e didático
+- ⚡ **Performance otimizada** (60 FPS)
+- 🎯 **Aplicação prática** de conceitos teóricos
 
 ---
 
-## Contato
+## 📚 Referências
 
-Para duvidas sobre o projeto academico, consulte:
-- Professor da disciplina ED II
-- Documentacao no codigo-fonte
-- README.md (este arquivo)
+- Cormen, T. H., et al. (2009). *Introduction to Algorithms* (3rd ed.)
+- Dijkstra, E. W. (1959). *A note on two problems in connexion with graphs*
+- Hart, P. E., et al. (1968). *A Formal Basis for the Heuristic Determination of Minimum Cost Paths*
+- Russell, S., & Norvig, P. (2020). *Artificial Intelligence: A Modern Approach* (4th ed.)
 
 ---
 
-**UNESP - Estruturas de Dados II - Fase 1 Completa**
+## 👨‍💻 Autor
+
+**Projeto Acadêmico**  
+Disciplina: Estrutura de Dados II  
+Instituição: UNESP - Bacharelado em Sistemas de Informação  
+Ano: 2024
+
+---
+
+## 📄 Licença
+
+Este é um projeto acadêmico desenvolvido para fins educacionais.
+
+---
+
+<div align="center">
+
+**🎮 Desenvolvido com Java e ❤️ para Estrutura de Dados II**
+
+*UNESP - Universidade Estadual Paulista "Júlio de Mesquita Filho"*
+
+</div>
