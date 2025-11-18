@@ -128,7 +128,8 @@ public class PacMan extends JPanel implements ActionListener, KeyListener {
             this.velocityY = 0;
         }
     }
-    
+    private int boardWidth = COLUMN_COUNT * TILE_SIZE;
+
     // Imagens
     private Image wallImage;
     private Image pacmanUpImage, pacmanDownImage, pacmanLeftImage, pacmanRightImage;
@@ -359,6 +360,18 @@ public class PacMan extends JPanel implements ActionListener, KeyListener {
         pacman.x += pacman.velocityX;
         pacman.y += pacman.velocityY;
         
+        // ========== CORREÇÃO DO BUG: WRAPAROUND HORIZONTAL ==========
+        // Teletransporte horizontal quando Pacman sai pelas bordas
+        if (pacman.x + pacman.width < 0) {
+            // Saiu pela borda esquerda -> aparece na direita
+            pacman.x = boardWidth;
+        } else if (pacman.x > boardWidth) {
+            // Saiu pela borda direita -> aparece na esquerda
+            pacman.x = -pacman.width;
+        }
+        // ============================================================
+
+
         // Verificar colisao com paredes
         for (Block wall : wallBlocks) {
             if (collision(pacman, wall)) {
