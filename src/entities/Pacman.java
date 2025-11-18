@@ -15,10 +15,40 @@ import javax.swing.*;
  * Classe principal do jogo Pacman.
  * Integra grafo, pathfinding e IA dos fantasmas.
  * 
- * FPS: 60 (16ms por frame)
  * Atualizacao de IA: A cada 4 frames (~15 vezes por segundo)
  */
 public class PacMan extends JPanel implements ActionListener, KeyListener {
+
+    /**
+     * TOLERÂNCIA DE POSICIONAMENTO:
+     * Margem de pixels permitida para considerar o Pacman "alinhado" com o grid.
+     */
+    private static final int ALIGNMENT_TOLERANCE = 6;
+    
+    /**
+     * TEMPO DE INPUT BUFFERING:
+     * Quantos frames (ciclos do game loop) manter o input buffered.
+     * Com game loop de 1000/60 ms (~16.67 ms por frame, 60 FPS):
+     * - 18 frames = 300 ms
+     */
+    private static final int INPUT_BUFFER_FRAMES = 18;
+    
+    /**
+     * AUTO-ALINHAMENTO:
+     * Quando true, o Pacman se alinha automaticamente ao grid ao fazer curvas.
+     */
+    private static final boolean AUTO_ALIGN_ON_TURN = true;
+    
+    /**
+     * Última direção pressionada pelo jogador.
+     */
+    private Direction bufferedDirection = Direction.NONE; // ' ' significa sem direção buffered
+    
+    /**
+     * Contador de frames restantes para tentar o input buffered.
+     * Decrementa a cada frame, quando chega a 0 o buffer expira.
+     */
+    private int bufferFramesRemaining = 0;
     
     // Dimensoes do tabuleiro
     private static final int ROW_COUNT = 21;
@@ -29,7 +59,7 @@ public class PacMan extends JPanel implements ActionListener, KeyListener {
     
     // FPS e velocidade
     private static final int FPS = 60;
-    private static final int FRAME_TIME = 1000 / FPS; // 16ms
+    private static final int FRAME_TIME = 1000 / FPS;
     private static final int AI_UPDATE_INTERVAL = 4; // Atualizar IA a cada 4 frames
     
     // Mapa do labirinto
@@ -164,7 +194,6 @@ public class PacMan extends JPanel implements ActionListener, KeyListener {
         loadImages();
         initializeGame();
         
-        // Timer a 60 FPS
         gameLoop = new Timer(FRAME_TIME, this);
         gameLoop.start();
     }
@@ -179,7 +208,6 @@ public class PacMan extends JPanel implements ActionListener, KeyListener {
         loadImages();
         initializeGame();
         
-        // Timer a 60 FPS
         gameLoop = new Timer(FRAME_TIME, this);
         gameLoop.start();
     }
@@ -370,24 +398,182 @@ public class PacMan extends JPanel implements ActionListener, KeyListener {
         }
     }
 
+    // ============================================================================
+    // SISTEMA DE CONTROLE FLUIDO - MÉTODOS PRINCIPAIS
+    // ============================================================================
+    
+    /**
+     * Verifica se o Pacman está alinhado com o grid em um eixo específico.
+     * 
+     * @param axis 'x' para horizontal, 'y' para vertical
+     * @return true se está alinhado (dentro da tolerância)
+     */
+    private boolean isAlignedWithGrid(char axis) {
+        if (axis == 'x') {
+            // Calcula a posição ideal no grid
+            int idealX = (pacman.x / TILE_SIZE) * TILE_SIZE;
+            int nextIdealX = idealX + TILE_SIZE;
+            
+            // Verifica se está dentro da tolerância de alguma posição ideal
+            return Math.abs(pacman.x - idealX) <= ALIGNMENT_TOLERANCE ||
+                   Math.abs(pacman.x - nextIdealX) <= ALIGNMENT_TOLERANCE;
+        } else if (axis == 'y') {
+            int idealY = (pacman.y / TILE_SIZE) * TILE_SIZE;
+            int nextIdealY = idealY + TILE_SIZE;
+            
+            return Math.abs(pacman.y - idealY) <= ALIGNMENT_TOLERANCE ||
+                   Math.abs(pacman.y - nextIdealY) <= ALIGNMENT_TOLERANCE;
+        }
+        return false;
+    }
+    
+    /**
+     * AUTO-ALINHAMENTO: Alinha o Pacman ao grid no eixo especificado.
+     * Isto é o que cria o efeito "magnético" de curvas suaves.
+     * 
+     * @param axis 'x' para horizontal, 'y' para vertical
+     */
+    private void alignToGrid(char axis) {
+        if (!AUTO_ALIGN_ON_TURN) return;
+        
+        if (axis == 'x') {
+            // Encontra a posição ideal mais próxima
+            int idealX = Math.round((float) pacman.x / TILE_SIZE) * TILE_SIZE;
+            pacman.x = idealX;
+        } else if (axis == 'y') {
+            int idealY = Math.round((float) pacman.y / TILE_SIZE) * TILE_SIZE;
+            pacman.y = idealY;
+        }
+    }
+    
+    /**
+     * Testa se uma direção é válida (não colide com paredes).
+     * Cria um Block temporário para testar a colisão.
+     * 
+     * @param testDirection direção a testar ('U', 'D', 'L', 'R')
+     * @return true se a direção é válida (sem colisão)
+     */
+    private boolean canMoveInDirection(Direction testDirection) {
+        // Cria um Block temporário para teste
+        Block testBlock = new Block(null, pacman.x, pacman.y, pacman.width, pacman.height);
+        testBlock.direction = testDirection;
+        testBlock.updateVelocity();
+        
+        // Simula o movimento
+        testBlock.x += testBlock.velocityX;
+        testBlock.y += testBlock.velocityY;
+        
+        // Verifica colisão com paredes
+        for (Block wall : wallBlocks) {
+            if (collision(testBlock, wall)) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+    
+    /**
+     * Verifica se mudar para uma nova direção é uma "curva" (mudança de eixo).
+     * 
+     * @param currentDir direção atual
+     * @param newDir nova direção desejada
+     * @return true se é uma curva (horizontal → vertical ou vice-versa)
+     */
+    private boolean isTurn(Direction currentDir, Direction newDir) {
+        boolean currentIsVertical = (currentDir.getCode() == 'U' || currentDir.getCode() == 'D');
+        boolean newIsVertical = (newDir.getCode() == 'U' || newDir.getCode() == 'D');
+        
+        return currentIsVertical != newIsVertical;
+    }
+    
+    /**
+     * CORNER CUTTING: Tenta aplicar a direção buffered.
+     * Este método é chamado a cada frame para verificar se a direção
+     * guardada se tornou válida.
+     */
+    private void tryApplyBufferedDirection() {
+        // Se não há direção buffered, retorna
+        if (bufferedDirection == Direction.NONE || bufferFramesRemaining <= 0) {
+            return;
+        }
+        
+        // Decrementa o contador de frames
+        bufferFramesRemaining--;
+        
+        // Verifica se a direção buffered agora é válida
+        boolean isValidMove = canMoveInDirection(bufferedDirection);
+        
+        if (isValidMove) {
+            // Verifica se é uma curva (mudança de eixo)
+            boolean isCurve = isTurn(pacman.direction, bufferedDirection);
+            
+            if (isCurve) {
+                // Para curvas, verifica alinhamento com tolerância
+                char axisToCheck = (bufferedDirection == Direction.LEFT || bufferedDirection == Direction.RIGHT) ? 'y' : 'x';
+                
+                if (isAlignedWithGrid(axisToCheck)) {
+                    // AUTO-ALINHAMENTO: Alinha ao grid antes de virar
+                    alignToGrid(axisToCheck);
+                    
+                    // Aplica a nova direção
+                    pacman.direction = bufferedDirection;
+                    pacman.updateVelocity();
+                    
+                    // Atualiza a imagem do Pacman
+                    updatePacmanImage(bufferedDirection);
+                    
+                    // Limpa o buffer
+                    bufferedDirection = Direction.NONE;
+                    bufferFramesRemaining = 0;
+                }
+            } else {
+                // Para reversões (180°), aplica imediatamente
+                pacman.direction = bufferedDirection;
+                pacman.updateVelocity();
+                updatePacmanImage(bufferedDirection);
+                
+                bufferedDirection = Direction.NONE;
+                bufferFramesRemaining = 0;
+            }
+        }
+    }
+    
+    /**
+     * Atualiza a imagem do Pacman baseada na direção.
+     * 
+     * @param direction direção ('U', 'D', 'L', 'R')
+     */
+    private void updatePacmanImage(Direction direction) {
+        if (direction == Direction.UP) {
+            pacman.image = pacmanUpImage;
+        } else if (direction == Direction.DOWN) {
+            pacman.image = pacmanDownImage;
+        } else if (direction == Direction.LEFT) {
+            pacman.image = pacmanLeftImage;
+        } else if (direction == Direction.RIGHT) {
+            pacman.image = pacmanRightImage;
+        }
+    }
+    
+
     /**
      * Movimenta Pacman, fantasmas e detecta colisoes.
      */
     private void move() {
+        // Tenta aplicar direção buffered a cada frame
+        tryApplyBufferedDirection();
+
         // Mover Pacman
         pacman.x += pacman.velocityX;
         pacman.y += pacman.velocityY;
         
-        // ========== CORREÇÃO DO BUG: WRAPAROUND HORIZONTAL ==========
         // Teletransporte horizontal quando Pacman sai pelas bordas
         if (pacman.x + pacman.width < 0) {
-            // Saiu pela borda esquerda -> aparece na direita
             pacman.x = boardWidth;
         } else if (pacman.x > boardWidth) {
-            // Saiu pela borda direita -> aparece na esquerda
             pacman.x = -pacman.width;
         }
-        // ============================================================
 
 
         // Verificar colisao com paredes
@@ -423,7 +609,6 @@ public class PacMan extends JPanel implements ActionListener, KeyListener {
             }
         }
         
-        // Verificar colisao com comida
         Block foodEaten = null;
         for (Block food : foods) {
             if (collision(pacman, food)) {
@@ -522,37 +707,66 @@ public class PacMan extends JPanel implements ActionListener, KeyListener {
     public void keyTyped(KeyEvent e) {}
 
     @Override
-    public void keyPressed(KeyEvent e) {}
-
-    @Override
-    public void keyReleased(KeyEvent e) {
+    public void keyPressed(KeyEvent e) {
         if (gameOver) {
-            restartGame();
-            return;
+            return; // Não processa input durante game over
         }
         
-        Direction newDir = Direction.NONE;
-        switch (e.getKeyCode()) {
-            case KeyEvent.VK_UP:
-                newDir = Direction.UP;
-                pacman.image = pacmanUpImage;
-                break;
-            case KeyEvent.VK_DOWN:
-                newDir = Direction.DOWN;
-                pacman.image = pacmanDownImage;
-                break;
-            case KeyEvent.VK_LEFT:
-                newDir = Direction.LEFT;
-                pacman.image = pacmanLeftImage;
-                break;
-            case KeyEvent.VK_RIGHT:
-                newDir = Direction.RIGHT;
-                pacman.image = pacmanRightImage;
-                break;
+        Direction newDirection = Direction.NONE;
+        
+        // Mapeia tecla para direção
+        if (e.getKeyCode() == KeyEvent.VK_UP) {
+            newDirection = Direction.UP;
+        } else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
+            newDirection = Direction.DOWN;
+        } else if (e.getKeyCode() == KeyEvent.VK_LEFT) {
+            newDirection = Direction.LEFT;
+        } else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
+            newDirection = Direction.RIGHT;
         }
         
-        if (newDir != Direction.NONE) {
-            pacman.updateDirection(newDir, wallGrid);
+        // Se uma tecla de direção foi pressionada
+        if (newDirection != Direction.NONE) {
+            // Tenta aplicar imediatamente
+            if (canMoveInDirection(newDirection)) {
+                boolean isCurve = isTurn(pacman.direction, newDirection);
+                
+                if (isCurve) {
+                    // É uma curva - verifica alinhamento
+                    char axisToCheck = (newDirection == Direction.LEFT || newDirection == Direction.RIGHT) ? 'y' : 'x';
+                    
+                    if (isAlignedWithGrid(axisToCheck)) {
+                        // Está alinhado - aplica imediatamente
+                        alignToGrid(axisToCheck);
+                        pacman.direction = newDirection;
+                        pacman.updateVelocity();
+                        updatePacmanImage(newDirection);
+                        
+                        // Limpa buffer (já aplicamos)
+                        bufferedDirection = Direction.NONE;
+                        bufferFramesRemaining = 0;
+                    } else {
+                        // Não está alinhado - guarda no buffer
+                        bufferedDirection = newDirection;
+                        bufferFramesRemaining = INPUT_BUFFER_FRAMES;
+                    }
+                } else {
+                    // Não é curva (reversão ou mesma direção) - aplica imediatamente
+                    pacman.direction = newDirection;
+                    pacman.updateVelocity();
+                    updatePacmanImage(newDirection);
+                    
+                    bufferedDirection = Direction.NONE;
+                    bufferFramesRemaining = 0;
+                }
+            } else {
+                // Direção inválida agora - guarda no buffer para tentar depois
+                bufferedDirection = newDirection;
+                bufferFramesRemaining = INPUT_BUFFER_FRAMES;
+            }
         }
     }
+
+    @Override
+    public void keyReleased(KeyEvent e) {}
 }

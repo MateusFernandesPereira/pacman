@@ -21,6 +21,10 @@ public enum Direction {
         this.code = code;
     }
 
+    public char getCode() {
+        return code;
+    }
+
     /**
      * Converte um codigo de caractere em Direction.
      */
