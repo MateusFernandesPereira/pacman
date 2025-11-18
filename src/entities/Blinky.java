@@ -18,9 +18,9 @@ import java.awt.*;
 public class Blinky extends Ghost {
 
     public Blinky(Image image, int x, int y, int width, int height, int tileSize, 
-                  PathfindingManager pathfindingManager) {
+                  PathfindingManager pathfindingManager, int level) {
         super(image, x, y, width, height, tileSize, pathfindingManager, 
-              "Blinky", Color.RED);
+              "Blinky", Color.RED, level);
     }
 
     @Override

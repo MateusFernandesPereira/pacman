@@ -19,9 +19,9 @@ import java.awt.*;
 public class Pinky extends Ghost {
 
     public Pinky(Image image, int x, int y, int width, int height, int tileSize, 
-                 PathfindingManager pathfindingManager) {
+                 PathfindingManager pathfindingManager, int level) {
         super(image, x, y, width, height, tileSize, pathfindingManager, 
-              "Pinky", Color.PINK);
+              "Pinky", Color.PINK, level);
     }
 
     @Override

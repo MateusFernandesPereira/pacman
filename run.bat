@@ -6,7 +6,7 @@ echo ====================================
 echo.
 
 REM Verificar se o projeto foi compilado
-if not exist "bin\App.class" (
+if not exist "bin\MainMenu.class" (
     echo ERRO: Projeto nao compilado!
     echo Execute compile.bat primeiro.
     echo.
@@ -15,6 +15,6 @@ if not exist "bin\App.class" (
 )
 
 REM Executar o jogo
-java -cp "lib/*;bin" App
+java -cp "lib/*;bin" MainMenu
 
 pause

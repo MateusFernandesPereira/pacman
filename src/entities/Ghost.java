@@ -27,12 +27,13 @@ public abstract class Ghost {
     protected PathfindingManager pathfindingManager;
     protected String name;
     protected Color color;
+    protected int level;
 
     /**
      * Construtor base para fantasmas.
      */
     public Ghost(Image image, int x, int y, int width, int height, int tileSize, 
-                 PathfindingManager pathfindingManager, String name, Color color) {
+                 PathfindingManager pathfindingManager, String name, Color color, int level) {
         this.image = image;
         this.x = x;
         this.y = y;
@@ -47,6 +48,7 @@ public abstract class Ghost {
         this.velocityY = 0;
         this.name = name;
         this.color = color;
+        this.level = level;
     }
 
     /**
@@ -85,8 +87,8 @@ public abstract class Ghost {
      * Atualiza a velocidade baseado na direcao atual.
      */
     protected void updateVelocity() {
-        velocityX = direction.dx * (tileSize / 4);
-        velocityY = direction.dy * (tileSize / 4);
+        velocityX = direction.dx * (tileSize / level);
+        velocityY = direction.dy * (tileSize / level);
     }
 
     /**

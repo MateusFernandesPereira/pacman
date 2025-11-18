@@ -24,9 +24,9 @@ public class Inky extends Ghost {
     private static final int PATROL_DURATION = 60; // Frames
 
     public Inky(Image image, int x, int y, int width, int height, int tileSize, 
-                PathfindingManager pathfindingManager) {
+                PathfindingManager pathfindingManager, int level) {
         super(image, x, y, width, height, tileSize, pathfindingManager, 
-              "Inky", Color.CYAN);
+              "Inky", Color.CYAN, level);
         this.random = new Random();
         this.isPatrolling = true;
         this.patrolTimer = 0;
