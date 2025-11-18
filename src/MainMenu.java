@@ -32,7 +32,7 @@ public class MainMenu extends JFrame {
         // Acoes dos botoes
         startButton.addActionListener(e -> {
             dispose();
-            iniciarJogo();
+            exibirLevels();
         });
 
         rankingButton.addActionListener(e -> {
@@ -42,9 +42,33 @@ public class MainMenu extends JFrame {
         exitButton.addActionListener(e -> System.exit(0));
     }
 
-    private void iniciarJogo() {
+    private void exibirLevels() {
+        java.util.Map<String, Integer> levelValues = new java.util.LinkedHashMap<>();
+        levelValues.put("Fase 1", 16);
+        levelValues.put("Fase 2", 8);
+        levelValues.put("Fase 3", 4);
+
+        String[] levels = levelValues.keySet().toArray(new String[0]);
+
+        String selectedLevel = (String) JOptionPane.showInputDialog(
+            this,
+            "Selecione a fase:",
+            "Selecionar Fase",
+            JOptionPane.QUESTION_MESSAGE,
+            null,
+            levels,
+            levels[0]
+        );
+
+        if (selectedLevel != null) {
+            int valorDaFase = levelValues.get(selectedLevel); 
+            iniciarJogo(valorDaFase);
+        }
+    }
+
+    private void iniciarJogo(int level) {
         JFrame frame = new JFrame("Pac-Man - Fase 1: Grafos e IA");
-        PacMan pacman = new PacMan();
+        PacMan pacman = new PacMan(level);
         frame.add(pacman);
         frame.pack();
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
