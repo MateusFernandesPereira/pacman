@@ -151,8 +151,26 @@ public class PacMan extends JPanel implements ActionListener, KeyListener {
     private int lives = 3;
     private boolean gameOver = false;
     private int frameCount = 0;
+    private int level;
+
+
+    public PacMan(int level) {
+        this.level = level;
+        setPreferredSize(new Dimension(BOARD_WIDTH, BOARD_HEIGHT));
+        setBackground(Color.BLACK);
+        addKeyListener(this);
+        setFocusable(true);
+
+        loadImages();
+        initializeGame();
+        
+        // Timer a 60 FPS
+        gameLoop = new Timer(FRAME_TIME, this);
+        gameLoop.start();
+    }
 
     public PacMan() {
+        this.level = 4;
         setPreferredSize(new Dimension(BOARD_WIDTH, BOARD_HEIGHT));
         setBackground(Color.BLACK);
         addKeyListener(this);
@@ -229,22 +247,22 @@ public class PacMan extends JPanel implements ActionListener, KeyListener {
                         
                     case 'r': // Fantasma vermelho (Blinky)
                         ghosts.add(new Blinky(redGhostImg, x, y, TILE_SIZE, TILE_SIZE, 
-                                             TILE_SIZE, pathfindingManager));
+                                             TILE_SIZE, pathfindingManager, level));
                         break;
                         
                     case 'p': // Fantasma rosa (Pinky)
                         ghosts.add(new Pinky(pinkGhostImg, x, y, TILE_SIZE, TILE_SIZE, 
-                                            TILE_SIZE, pathfindingManager));
+                                            TILE_SIZE, pathfindingManager, level));
                         break;
                         
                     case 'b': // Fantasma azul (Inky)
                         ghosts.add(new Inky(cyanGhostImg, x, y, TILE_SIZE, TILE_SIZE, 
-                                           TILE_SIZE, pathfindingManager));
+                                           TILE_SIZE, pathfindingManager, level));
                         break;
                         
                     case 'o': // Fantasma laranja (Clyde)
                         ghosts.add(new Clyde(orangeGhostImg, x, y, TILE_SIZE, TILE_SIZE, 
-                                            TILE_SIZE, pathfindingManager));
+                                            TILE_SIZE, pathfindingManager, level));
                         break;
                         
                     case 'P': // Pacman

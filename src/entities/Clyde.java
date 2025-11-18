@@ -24,9 +24,9 @@ public class Clyde extends Ghost {
     private int cornerY;
 
     public Clyde(Image image, int x, int y, int width, int height, int tileSize, 
-                 PathfindingManager pathfindingManager) {
+                 PathfindingManager pathfindingManager, int level) {
         super(image, x, y, width, height, tileSize, pathfindingManager, 
-              "Clyde", Color.ORANGE);
+              "Clyde", Color.ORANGE, level);
         // Canto inferior esquerdo como ponto de fuga
         this.cornerX = tileSize;
         this.cornerY = tileSize * 19;
