@@ -16,5 +16,3 @@ if not exist "bin\MainMenu.class" (
 
 REM Executar o jogo
 java -cp "lib/*;bin" MainMenu
-
-pause

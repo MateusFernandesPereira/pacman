@@ -1,18 +1,14 @@
-
 @echo off
 echo ====================================
 echo   COMPILANDO PACMAN - FASE 1
 echo ====================================
 echo.
 
-REM Criar diretorio bin se nao existir
 if not exist "bin" mkdir bin
 
-REM Gerar sources.txt dinamicamente
 echo Gerando lista de arquivos fonte...
 dir /s /b src\*.java > sources.txt
 
-REM Compilar todos os arquivos Java
 echo Compilando...
 javac -d bin -cp "lib/*" @sources.txt
 
@@ -22,9 +18,18 @@ if %ERRORLEVEL% EQU 0 (
     echo   COMPILACAO CONCLUIDA COM SUCESSO
     echo ====================================
     echo.
-    echo Para executar o jogo, use:
-    echo   run.bat
-    echo.
+
+    :ask
+    set /p "choice=Deseja rodar? (Y/N): "
+    if /i "%choice%"=="Y" goto run
+    if /i "%choice%"=="N" goto end
+    echo Digite apenas Y ou N
+    goto ask
+
+    :run
+    call run.bat
+    goto end
+
 ) else (
     echo.
     echo ====================================
@@ -38,4 +43,5 @@ if %ERRORLEVEL% EQU 0 (
     echo.
 )
 
+:end
 pause
