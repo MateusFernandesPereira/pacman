@@ -1,10 +1,13 @@
 @echo off
 echo ====================================
-echo   COMPILANDO PACMAN - FASE 1
+echo   COMPILANDO PACMAN
 echo ====================================
 echo.
 
 if not exist "bin" mkdir bin
+
+REM Copiar imagens para bin
+xcopy /E /I /Y src\Images bin\Images
 
 echo Gerando lista de arquivos fonte...
 dir /s /b src\*.java > sources.txt
