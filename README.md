@@ -735,7 +735,13 @@ pacman/
 **Projeto Acadêmico**  
 Disciplina: Estrutura de Dados II  
 Instituição: UNESP - Bacharelado em Sistemas de Informação  
-Ano: 2024
+Ano: 2025
+
+Alunos: 
+Marcelo Henrique Ayala
+Mateus Fernandes Pereira
+Thales Hirose Nakandakari
+Gleivan Afonso Bezerra
 
 ---
 
